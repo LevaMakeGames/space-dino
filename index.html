@@ -5,7 +5,7 @@
   <title>SpaceDino</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
   <style>
     html, body { margin: 0; padding: 0; overflow: hidden; }
     canvas { display: block; }
@@ -29,27 +29,29 @@ let coinsText;
 new Phaser.Game(config);
 
 function preload() {
-  this.load.image('dino', 'https://labs.phaser.io/assets/sprites/dino.png');
   this.load.image('bg', 'https://labs.phaser.io/assets/skies/space3.png');
-  this.load.audio('click', 'https://labs.phaser.io/assets/audio/SoundEffects/click.mp3');
+  this.load.image('dino', 'https://labs.phaser.io/assets/sprites/phaser-dude.png'); // Заменённый рабочий спрайт
   this.load.image('coin', 'https://labs.phaser.io/assets/sprites/coin.png');
+  this.load.audio('click', 'https://labs.phaser.io/assets/audio/SoundEffects/click.mp3');
 }
 
 function create() {
-  const centerX = this.scale.width / 2;
-  const centerY = this.scale.height / 2;
+  const width = this.scale.width;
+  const height = this.scale.height;
+  const centerX = width / 2;
+  const centerY = height / 2;
 
   // Фон
-  this.add.image(centerX, centerY, 'bg').setDisplaySize(this.scale.width, this.scale.height);
+  this.add.image(centerX, centerY, 'bg').setDisplaySize(width, height);
 
   // Звук
   const clickSound = this.sound.add('click');
 
-  // Динозавр
+  // Динозавр (по центру)
   const dino = this.add.image(centerX, centerY, 'dino').setScale(2);
 
   // Зона клика — весь экран
-  const clickZone = this.add.zone(0, 0, this.scale.width, this.scale.height)
+  const clickZone = this.add.zone(0, 0, width, height)
     .setOrigin(0)
     .setInteractive();
 
@@ -58,7 +60,6 @@ function create() {
     coinsText.setText(`Coins: ${coins}`);
     clickSound.play();
 
-    // Анимация монетки
     const coin = this.add.image(pointer.x, pointer.y, 'coin').setScale(0.5);
     this.tweens.add({
       targets: coin,
@@ -70,18 +71,21 @@ function create() {
   });
 
   // Текст монет
-  coinsText = this.add.text(20, 20, 'Coins: 0', { font: '24px Arial', fill: '#ffffff' });
+  coinsText = this.add.text(20, 20, 'Coins: 0', {
+    font: '24px Arial',
+    fill: '#ffffff'
+  });
 
   // Кнопки снизу
   const buttons = ['🛒 Магазин', '⚔️ Битва', '❓ Как играть', '🏠 Дом'];
-  const btnWidth = this.scale.width / 4;
+  const btnWidth = width / 4;
 
   buttons.forEach((text, i) => {
-    const btn = this.add.text(i * btnWidth + btnWidth / 2, this.scale.height - 40, text, {
+    const btn = this.add.text(i * btnWidth + btnWidth / 2, height - 40, text, {
       font: '18px Arial',
       fill: '#ffffff',
-      backgroundColor: '#222'
-    }).setOrigin(0.5).setPadding(10).setInteractive();
+      backgroundColor: '#333'
+    }).setOrigin(0.5).setPadding(8).setInteractive();
 
     btn.on('pointerdown', () => {
       console.log(`Нажата кнопка: ${text}`);
@@ -91,4 +95,3 @@ function create() {
 </script>
 </body>
 </html>
-
