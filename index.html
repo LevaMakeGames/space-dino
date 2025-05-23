@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Dino Clicker</title>
+  <title>SpaceDino</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.js"></script>
@@ -19,30 +19,76 @@ const config = {
   type: Phaser.AUTO,
   width: window.innerWidth,
   height: window.innerHeight,
-  backgroundColor: '#1e1e1e',
+  backgroundColor: '#000000',
   scene: { preload, create }
 };
 
-let coins = 0, coinsText;
+let coins = 0;
+let coinsText;
 
 new Phaser.Game(config);
 
 function preload() {
   this.load.image('dino', 'https://labs.phaser.io/assets/sprites/dino.png');
+  this.load.image('bg', 'https://labs.phaser.io/assets/skies/space3.png');
+  this.load.audio('click', 'https://labs.phaser.io/assets/audio/SoundEffects/click.mp3');
+  this.load.image('coin', 'https://labs.phaser.io/assets/sprites/coin.png');
 }
 
 function create() {
   const centerX = this.scale.width / 2;
   const centerY = this.scale.height / 2;
 
-  const dino = this.add.image(centerX, centerY, 'dino').setInteractive().setScale(2);
-  dino.on('pointerdown', () => {
+  // Фон
+  this.add.image(centerX, centerY, 'bg').setDisplaySize(this.scale.width, this.scale.height);
+
+  // Звук
+  const clickSound = this.sound.add('click');
+
+  // Динозавр
+  const dino = this.add.image(centerX, centerY, 'dino').setScale(2);
+
+  // Зона клика — весь экран
+  const clickZone = this.add.zone(0, 0, this.scale.width, this.scale.height)
+    .setOrigin(0)
+    .setInteractive();
+
+  clickZone.on('pointerdown', (pointer) => {
     coins++;
     coinsText.setText(`Coins: ${coins}`);
+    clickSound.play();
+
+    // Анимация монетки
+    const coin = this.add.image(pointer.x, pointer.y, 'coin').setScale(0.5);
+    this.tweens.add({
+      targets: coin,
+      y: coin.y - 100,
+      alpha: 0,
+      duration: 600,
+      onComplete: () => coin.destroy()
+    });
   });
 
+  // Текст монет
   coinsText = this.add.text(20, 20, 'Coins: 0', { font: '24px Arial', fill: '#ffffff' });
+
+  // Кнопки снизу
+  const buttons = ['🛒 Магазин', '⚔️ Битва', '❓ Как играть', '🏠 Дом'];
+  const btnWidth = this.scale.width / 4;
+
+  buttons.forEach((text, i) => {
+    const btn = this.add.text(i * btnWidth + btnWidth / 2, this.scale.height - 40, text, {
+      font: '18px Arial',
+      fill: '#ffffff',
+      backgroundColor: '#222'
+    }).setOrigin(0.5).setPadding(10).setInteractive();
+
+    btn.on('pointerdown', () => {
+      console.log(`Нажата кнопка: ${text}`);
+    });
+  });
 }
 </script>
 </body>
 </html>
+
