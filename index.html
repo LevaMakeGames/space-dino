@@ -29,12 +29,10 @@ let coinsText;
 new Phaser.Game(config);
 
 function preload() {
-  this.load.image('bg', 'https://labs.phaser.io/assets/skies/space4.png');
+  this.load.image('bg', 'https://labs.phaser.io/assets/skies/space3.png');
   this.load.image('dino', 'https://labs.phaser.io/assets/sprites/phaser-dude.png');
   this.load.image('coin', 'https://labs.phaser.io/assets/sprites/coin.png');
-  this.load.audio('click', 'https://labs.phaser.io/assets/audio/SoundEffects/click.mp3');
 
-  // После полной загрузки ресурсов вызываем create()
   this.load.once('complete', create, this);
   this.load.start();
 }
@@ -48,13 +46,10 @@ function create() {
   // Фон
   this.add.image(centerX, centerY, 'bg').setDisplaySize(width, height);
 
-  // Звук
-  const clickSound = this.sound.add('click');
+  // Динозавр по центру
+  this.add.image(centerX, centerY, 'dino').setScale(2);
 
-  // Динозавр (по центру)
-  const dino = this.add.image(centerX, centerY, 'dino').setScale(2);
-
-  // Зона клика — весь экран
+  // Зона клика по всему экрану
   const clickZone = this.add.zone(0, 0, width, height)
     .setOrigin(0)
     .setInteractive();
@@ -62,7 +57,6 @@ function create() {
   clickZone.on('pointerdown', (pointer) => {
     coins++;
     coinsText.setText(`Coins: ${coins}`);
-    clickSound.play();
 
     const coin = this.add.image(pointer.x, pointer.y, 'coin').setScale(0.5);
     this.tweens.add({
@@ -80,7 +74,7 @@ function create() {
     fill: '#ffffff'
   });
 
-  // Кнопки снизу
+  // Кнопки
   const buttons = ['🛒 Магазин', '⚔️ Битва', '❓ Как играть', '🏠 Дом'];
   const btnWidth = width / 4;
 
