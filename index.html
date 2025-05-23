@@ -29,9 +29,10 @@ let coinsText;
 new Phaser.Game(config);
 
 function preload() {
-  this.load.image('bg', 'https://labs.phaser.io/assets/skies/space3.png');
-  this.load.image('dino', 'https://labs.phaser.io/assets/sprites/phaser-dude.png');
-  this.load.image('coin', 'https://labs.phaser.io/assets/sprites/coin.png');
+  this.load.image('bg', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/bg.png');
+  this.load.image('dino', 'https://github.com/LevaMakeGames/space-dino/blob/main/photo_2025-05-23%2010.58.59.jpeg?raw=true');
+  this.load.image('coin', 'https://github.com/LevaMakeGames/space-dino/blob/main/ChatGPT%20Image%2023%20мая%202025%20г.,%2011_01_03.png?raw=true');
+  this.load.audio('click', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/1.wav');
 
   this.load.once('complete', create, this);
   this.load.start();
@@ -43,42 +44,38 @@ function create() {
   const centerX = width / 2;
   const centerY = height / 2;
 
-  // Фон
   this.add.image(centerX, centerY, 'bg').setDisplaySize(width, height);
 
-  // Динозавр по центру
-  this.add.image(centerX, centerY, 'dino').setScale(2);
+  const clickSound = this.sound.add('click');
+  this.add.image(centerX, centerY, 'dino').setScale(0.5);
 
-  // Зона клика по всему экрану
-  const clickZone = this.add.zone(0, 0, width, height)
-    .setOrigin(0)
-    .setInteractive();
+  const clickZone = this.add.zone(0, 0, width, height).setOrigin(0).setInteractive();
 
   clickZone.on('pointerdown', (pointer) => {
     coins++;
     coinsText.setText(`Coins: ${coins}`);
+    clickSound.play();
 
-    const coin = this.add.image(pointer.x, pointer.y, 'coin').setScale(0.5);
+    const coin = this.add.image(pointer.x, pointer.y, 'coin').setScale(0.25);
     this.tweens.add({
       targets: coin,
       y: coin.y - 100,
       alpha: 0,
       duration: 600,
+      ease: 'Cubic.easeOut',
       onComplete: () => coin.destroy()
     });
   });
 
-  // Текст монет
   coinsText = this.add.text(20, 20, 'Coins: 0', {
     font: '24px Arial',
     fill: '#ffffff'
   });
 
-  // Кнопки
-  const buttons = ['🛒 Магазин', '⚔️ Битва', '❓ Как играть', '🏠 Дом'];
+  const buttonLabels = ['Магазин', 'Битва', 'Как играть', 'Дом'];
   const btnWidth = width / 4;
 
-  buttons.forEach((text, i) => {
+  buttonLabels.forEach((text, i) => {
     const btn = this.add.text(i * btnWidth + btnWidth / 2, height - 40, text, {
       font: '18px Arial',
       fill: '#ffffff',
