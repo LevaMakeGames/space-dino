@@ -29,9 +29,9 @@ let coinsText;
 new Phaser.Game(config);
 
 function preload() {
-  this.load.image('bg', 'https://labs.phaser.io/assets/skies/space4.png');
+  this.load.image('bg', 'https://labs.phaser.io/assets/skies/space3.png');
   this.load.image('dino', 'https://labs.phaser.io/assets/sprites/phaser-dude.png');
-  this.load.image('coin', 'https://github.com/LevaMakeGames/space-dino/blob/main/assets/coin.png?raw=true');
+  this.load.image('coin', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/coin.png');
 
   this.load.once('complete', create, this);
   this.load.start();
