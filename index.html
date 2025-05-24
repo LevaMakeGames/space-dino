@@ -4,10 +4,8 @@
   <meta charset="UTF-8" />
   <title>SpaceDino Stars</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
-
   <style>
     html, body { margin: 0; padding: 0; overflow: hidden; }
     canvas { display: block; }
@@ -36,7 +34,6 @@ function preload() {
   this.load.image('bg', 'https://labs.phaser.io/assets/skies/space3.png');
   this.load.image('dino', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/dino2.jpeg');
   this.load.image('coin', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/coin.png');
-
   this.load.once('complete', create, this);
   this.load.start();
 }
@@ -51,7 +48,6 @@ function create() {
   this.add.image(centerX, centerY, 'dino').setScale(2);
 
   const clickZone = this.add.zone(0, 0, width, height).setOrigin(0).setInteractive();
-
   clickZone.on('pointerdown', (pointer) => {
     coins++;
     coinsText.setText(`Coins: ${coins}`);
@@ -72,22 +68,32 @@ function create() {
     fill: '#ffffff'
   });
 
-  // Кнопка покупки за Stars
   const buyBtn = this.add.text(20, 80, 'Buy Booster (Stars)', {
     font: '20px Arial',
     fill: '#fff',
     backgroundColor: '#44c',
-    padding: 10
+    padding: { left: 10, right: 10, top: 5, bottom: 5 }
   }).setInteractive();
 
   buyBtn.on('pointerdown', () => {
-    Telegram.WebApp.openInvoice({
-      provider_token: "", // ← Пусто!
-      title: "Booster Pack",
-      description: "Get 3 random dinos",
-      payload: "booster1",
-      currency: "XTR", // ← ВАЖНО: Stars
-      prices: [{ label: "Booster", amount: 4900 }] // 49 Stars
+    const userId = Telegram.WebApp.initDataUnsafe?.user?.id;
+    if (!userId) {
+      alert("❗ Запусти игру через Telegram");
+      return;
+    }
+
+    fetch("http://localhost:3000/buy", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: userId })
+    }).then(res => {
+      if (res.ok) {
+        alert("⏳ Ожидайте окно оплаты...");
+      } else {
+        alert("❌ Ошибка запроса к серверу");
+      }
+    }).catch(() => {
+      alert("⚠️ Нет связи с сервером");
     });
   });
 }
