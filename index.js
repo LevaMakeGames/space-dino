@@ -1,13 +1,16 @@
+const express = require('express');
+const bodyParser = require('body-parser');
 const TelegramBot = require('node-telegram-bot-api');
 
-// 🔐 Вставь сюда токен от @BotFather
 const token = '7835548993:AAHkR_Xe2nJDHhxz-J9vaSouyIHY0ck7490';
+const bot = new TelegramBot(token, { polling: false }); // polling отключаем — Express будет использовать Webhook
 
-const bot = new TelegramBot(token, { polling: true });
+const app = express();
+app.use(bodyParser.json());
 
+// 🌐 /start — как у тебя было
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
-
   bot.sendMessage(chatId, 'Запусти игру:', {
     reply_markup: {
       inline_keyboard: [[
@@ -18,4 +21,46 @@ bot.onText(/\/start/, (msg) => {
       ]]
     }
   });
+});
+
+// 🔸 Покупка Stars — /buy
+app.post('/buy', async (req, res) => {
+  const userId = req.body.user_id;
+  if (!userId) return res.status(400).send({ error: 'No user_id' });
+
+  try {
+    await bot.sendInvoice(
+      userId,
+      'Booster Pack',
+      'Покупка бустера',
+      'booster_001',
+      '', // Stars — без provider_token
+      'XTR',
+      [{ label: 'Booster', amount: 100 }],
+      {
+        need_name: false,
+        need_phone_number: false,
+        need_email: false
+      }
+    );
+    res.send({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).send({ error: 'Failed to send invoice' });
+  }
+});
+
+// 🔸 Telegram подтверждение оплаты
+bot.on('pre_checkout_query', (query) => {
+  bot.answerPreCheckoutQuery(query.id, true);
+});
+
+bot.on('successful_payment', (msg) => {
+  bot.sendMessage(msg.chat.id, '✅ Покупка прошла успешно!');
+});
+
+// 🔸 Запуск сервера
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log('Bot server running on port', PORT);
 });
