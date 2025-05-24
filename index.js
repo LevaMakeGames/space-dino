@@ -1,16 +1,19 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 const TelegramBot = require('node-telegram-bot-api');
 
 const token = '7835548993:AAHkR_Xe2nJDHhxz-J9vaSouyIHY0ck7490';
-const bot = new TelegramBot(token, { polling: false }); // polling отключаем — Express будет использовать Webhook
+const bot = new TelegramBot(token, { polling: false });
 
 const app = express();
+app.use(cors()); // ✅ разрешаем запросы из игры
 app.use(bodyParser.json());
 
-// 🌐 /start — как у тебя было
+// /start — стартовая кнопка
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
+
   bot.sendMessage(chatId, 'Запусти игру:', {
     reply_markup: {
       inline_keyboard: [[
@@ -23,7 +26,7 @@ bot.onText(/\/start/, (msg) => {
   });
 });
 
-// 🔸 Покупка Stars — /buy
+// Покупка Stars
 app.post('/buy', async (req, res) => {
   const userId = req.body.user_id;
   if (!userId) return res.status(400).send({ error: 'No user_id' });
@@ -43,6 +46,7 @@ app.post('/buy', async (req, res) => {
         need_email: false
       }
     );
+
     res.send({ ok: true });
   } catch (e) {
     console.error(e);
@@ -50,7 +54,7 @@ app.post('/buy', async (req, res) => {
   }
 });
 
-// 🔸 Telegram подтверждение оплаты
+// Подтверждение оплаты
 bot.on('pre_checkout_query', (query) => {
   bot.answerPreCheckoutQuery(query.id, true);
 });
@@ -59,7 +63,7 @@ bot.on('successful_payment', (msg) => {
   bot.sendMessage(msg.chat.id, '✅ Покупка прошла успешно!');
 });
 
-// 🔸 Запуск сервера
+// Запуск сервера
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log('Bot server running on port', PORT);
