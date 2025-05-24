@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>SpaceDino</title>
+  <title>SpaceDino Stars</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -72,23 +72,22 @@ function create() {
     fill: '#ffffff'
   });
 
-  const buyButton = this.add.text(20, 80, 'Buy Booster (Test)', {
+  // Кнопка покупки за Stars
+  const buyBtn = this.add.text(20, 80, 'Buy Booster (Stars)', {
     font: '20px Arial',
-    fill: '#ffffff',
-    backgroundColor: '#0077cc',
+    fill: '#fff',
+    backgroundColor: '#44c',
     padding: 10
   }).setInteractive();
 
-  buyButton.on('pointerdown', () => {
-    alert("Попытка открыть оплату...");
-
+  buyBtn.on('pointerdown', () => {
     Telegram.WebApp.openInvoice({
-      provider_token: "1877036958:TEST:da33e36ec4da835baea0b335c3f59cf361e7c3f4",
+      provider_token: "", // ← Пусто!
       title: "Booster Pack",
       description: "Get 3 random dinos",
       payload: "booster1",
-      currency: "USD",
-      prices: [{ label: "Booster", amount: 1000 }]
+      currency: "XTR", // ← ВАЖНО: Stars
+      prices: [{ label: "Booster", amount: 4900 }] // 49 Stars
     });
   });
 }
