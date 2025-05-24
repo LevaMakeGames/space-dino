@@ -17,6 +17,7 @@
 
 <script>
 Telegram.WebApp.ready();
+Telegram.WebApp.expand();
 
 const config = {
   type: Phaser.AUTO,
@@ -71,34 +72,20 @@ function create() {
     fill: '#ffffff'
   });
 
-  const buttons = ['Магазин', 'Битва', 'Как играть', 'Дом'];
-  const btnWidth = width / 4;
-
-  buttons.forEach((text, i) => {
-    const btn = this.add.text(i * btnWidth + btnWidth / 2, height - 40, text, {
-      font: '18px Arial',
-      fill: '#ffffff',
-      backgroundColor: '#333'
-    }).setOrigin(0.5).setPadding(8).setInteractive();
-
-    btn.on('pointerdown', () => {
-      console.log(`Нажата кнопка: ${text}`);
-    });
-  });
-
-  // Кнопка покупки Stars
-  const starsBtn = this.add.text(20, 100, 'Buy Booster (Test)', {
+  const buyButton = this.add.text(20, 80, 'Buy Booster (Test)', {
     font: '20px Arial',
-    fill: '#fff',
-    backgroundColor: '#44c',
+    fill: '#ffffff',
+    backgroundColor: '#0077cc',
     padding: 10
   }).setInteractive();
 
-  starsBtn.on('pointerdown', () => {
+  buyButton.on('pointerdown', () => {
+    alert("Попытка открыть оплату...");
+
     Telegram.WebApp.openInvoice({
       provider_token: "1877036958:TEST:da33e36ec4da835baea0b335c3f59cf361e7c3f4",
       title: "Booster Pack",
-      description: "Gives 3 random dinos",
+      description: "Get 3 random dinos",
       payload: "booster1",
       currency: "USD",
       prices: [{ label: "Booster", amount: 1000 }]
