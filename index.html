@@ -7,7 +7,6 @@
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
-  <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
 
   <style>
     html, body { margin: 0; padding: 0; overflow: hidden; }
@@ -18,12 +17,6 @@
 
 <script>
 Telegram.WebApp.ready();
-
-let AdController;
-
-window.addEventListener("DOMContentLoaded", () => {
-  AdController = window.Adsgram.init({ blockId: "11306" }); // <-- твой blockId
-});
 
 const config = {
   type: Phaser.AUTO,
@@ -89,17 +82,26 @@ function create() {
     }).setOrigin(0.5).setPadding(8).setInteractive();
 
     btn.on('pointerdown', () => {
-      if (text === 'Магазин') {
-        if (AdController) {
-          AdController.show()
-            .then(() => alert('✅ Реклама просмотрена — награда!'))
-            .catch(() => alert('❌ Реклама не просмотрена.'));
-        } else {
-          alert('❗ AdsGram не инициализировался');
-        }
-      } else {
-        console.log(`Нажата кнопка: ${text}`);
-      }
+      console.log(`Нажата кнопка: ${text}`);
+    });
+  });
+
+  // Кнопка покупки Stars
+  const starsBtn = this.add.text(20, 100, 'Buy Booster (Test)', {
+    font: '20px Arial',
+    fill: '#fff',
+    backgroundColor: '#44c',
+    padding: 10
+  }).setInteractive();
+
+  starsBtn.on('pointerdown', () => {
+    Telegram.WebApp.openInvoice({
+      provider_token: "1877036958:TEST:da33e36ec4da835baea0b335c3f59cf361e7c3f4",
+      title: "Booster Pack",
+      description: "Gives 3 random dinos",
+      payload: "booster1",
+      currency: "USD",
+      prices: [{ label: "Booster", amount: 1000 }]
     });
   });
 }
