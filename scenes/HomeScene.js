@@ -4,34 +4,36 @@ export default class HomeScene extends Phaser.Scene {
   }
 
   preload() {
-  this.load.image('dino_open', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/dino_open.png');
-  this.load.image('dino_closed', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/dino_closed.png');
-  this.load.image('coin', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/coin.png');
-}
+    this.load.image('bg', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/dino_bg.png');
+    this.load.image('dino_open', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/dino_open.png');
+    this.load.image('dino_closed', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/dino_closed.png');
+    this.load.image('coin', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/coin.png');
+  }
 
   create() {
-    const centerX = this.cameras.main.centerX;
-    const centerY = this.cameras.main.centerY;
+    const { centerX, centerY, width, height } = this.cameras.main;
 
-    // Заголовок
-    this.add.text(100, 100, '🏠 Дом: нажимай, чтобы заработать', {
-      fontSize: '18px',
-      fill: '#fff'
-    });
+    // Фон с сохранением пропорций
+    const bg = this.add.image(0, 0, 'bg').setOrigin(0);
+    const scaleX = width / bg.width;
+    const scaleY = height / bg.height;
+    const scale = Math.max(scaleX, scaleY); // сохраняем пропорции
+    bg.setScale(scale);
+    bg.setDepth(0);
 
-    // Счётчик монет
+    // Счётчик
     let coins = 0;
-    const counter = this.add.text(100, 150, 'Coins: 0', {
+    const counter = this.add.text(20, 20, 'Coins: 0', {
       fontSize: '24px',
       fill: '#0f0'
-    });
+    }).setDepth(2);
 
-    // Динозавр
-    const dino = this.add.image(centerX, centerY, 'dino_open');
+    // Динозавр ниже на 100
+    const dino = this.add.image(centerX, centerY + 100, 'dino_open').setDepth(1);
 
-    // Моргание (смена текстуры)
+    // Моргание
     this.time.addEvent({
-      delay: Phaser.Math.Between(2000, 4000),
+      delay: Phaser.Math.Between(3000, 6000),
       loop: true,
       callback: () => {
         dino.setTexture('dino_closed');
@@ -44,31 +46,32 @@ export default class HomeScene extends Phaser.Scene {
     // Клик по экрану
     this.input.on('pointerdown', () => {
       // Анимация динозавра
-      // this.tweens.add({
-      //   targets: dino,
-      //   scaleX: 1.1,
-      //   scaleY: 0.9,
-      //   angle: -5,
-      //   yoyo: true,
-      //   duration: 100
-      // });
+      this.tweens.add({
+        targets: dino,
+        scaleX: 1.1,
+        scaleY: 0.9,
+        angle: -5,
+        yoyo: true,
+        duration: 100
+      });
 
-      // Монета, вылетающая из динозавра
-      const coin = this.add.image(dino.x, dino.y - 150, 'coin').setScale(0.5);
+      // Монета
+      const coin = this.add.image(dino.x, dino.y - 50, 'coin')
+        .setScale(0.5)
+        .setDepth(2);
       this.tweens.add({
         targets: coin,
         y: coin.y - 50,
         alpha: 0,
-        duration: 800,
+        duration: 500,
         onComplete: () => coin.destroy()
       });
 
-      // Обновление счётчика
+      // Счётчик
       coins++;
       counter.setText(`Coins: ${coins}`);
     });
 
-    // Кнопки навигации
     this.addNavigation();
   }
 
@@ -80,7 +83,7 @@ export default class HomeScene extends Phaser.Scene {
         backgroundColor: '#444',
         padding: 5,
         fill: '#fff'
-      }).setInteractive();
+      }).setInteractive().setDepth(2);
       btn.on('pointerdown', () => this.scene.start(name));
     });
   }
