@@ -81,33 +81,36 @@ export default class HomeScene extends Phaser.Scene {
 
 addNavigation() {
   const buttonNames = ['Home', 'Shop', 'Battle', 'Help'];
-  const spacing = 16;
-  const padding = 40;
-  const y = this.scale.height - 60;
-  const availableWidth = this.scale.width - padding * 2;
-  const maxButtonWidth = (availableWidth - spacing * (buttonNames.length - 1)) / buttonNames.length;
+  const buttonWidth = 100;
+  const buttonHeight = 40;
+  const spacing = 12;
+  const totalWidth = buttonNames.length * buttonWidth + (buttonNames.length - 1) * spacing;
+
+  const startX = this.cameras.main.centerX - totalWidth / 2;
+  const y = this.scale.height - 50;
 
   buttonNames.forEach((name, i) => {
-    const x = padding + i * (maxButtonWidth + spacing);
+    const x = startX + i * (buttonWidth + spacing);
 
-    const bg = this.add.image(0, 0, 'menuBtn').setOrigin(0.5);
-    const scale = maxButtonWidth / bg.width;
-    bg.setScale(scale);
+    const bg = this.add.image(0, 0, 'menuBtn')
+      .setDisplaySize(buttonWidth, buttonHeight)
+      .setOrigin(0.5);
 
     const label = this.add.text(0, 0, name, {
-      fontSize: '18px',
-      color: '#fff',
-      fontFamily: 'Arial'
+      fontSize: '16px',
+      fontFamily: 'Arial',
+      color: '#fff'
     }).setOrigin(0.5);
 
-    const container = this.add.container(x + maxButtonWidth / 2, y, [bg, label])
-      .setSize(bg.width * scale, bg.height * scale)
+    const container = this.add.container(x + buttonWidth / 2, y, [bg, label])
+      .setSize(buttonWidth, buttonHeight)
       .setInteractive()
       .setDepth(3);
 
     container.on('pointerdown', () => this.scene.start(name));
   });
 }
+
 
 
 }
