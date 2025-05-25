@@ -13,23 +13,24 @@ export default class HomeScene extends Phaser.Scene {
   create() {
     const { centerX, centerY, width, height } = this.cameras.main;
 
-    // Фон с сохранением пропорций
+    // Фон
     const bg = this.add.image(0, 0, 'bg').setOrigin(0);
     const scaleX = width / bg.width;
     const scaleY = height / bg.height;
-    const scale = Math.max(scaleX, scaleY); // сохраняем пропорции
+    const scale = Math.max(scaleX, scaleY);
     bg.setScale(scale);
     bg.setDepth(0);
 
-    // Счётчик
+    // Счётчик монет
     let coins = 0;
     const counter = this.add.text(20, 20, 'Coins: 0', {
       fontSize: '24px',
       fill: '#0f0'
     }).setDepth(2);
 
-    // Динозавр ниже на 100
+    // Динозавр
     const dino = this.add.image(centerX, centerY + 100, 'dino_open').setDepth(1);
+    this.dinoTween = null;
 
     // Моргание
     this.time.addEvent({
@@ -45,8 +46,10 @@ export default class HomeScene extends Phaser.Scene {
 
     // Клик по экрану
     this.input.on('pointerdown', () => {
+      if (this.dinoTween && this.dinoTween.isPlaying()) return;
+
       // Анимация динозавра
-      this.tweens.add({
+      this.dinoTween = this.tweens.add({
         targets: dino,
         scaleX: 1.1,
         scaleY: 0.9,
@@ -55,8 +58,8 @@ export default class HomeScene extends Phaser.Scene {
         duration: 100
       });
 
-      // Монета
-      const coin = this.add.image(dino.x, dino.y - 50, 'coin')
+      // Монета (поднята выше на +50px)
+      const coin = this.add.image(dino.x, dino.y - 100, 'coin')
         .setScale(0.5)
         .setDepth(2);
       this.tweens.add({
@@ -72,6 +75,7 @@ export default class HomeScene extends Phaser.Scene {
       counter.setText(`Coins: ${coins}`);
     });
 
+    // Нижнее меню
     this.addNavigation();
   }
 
