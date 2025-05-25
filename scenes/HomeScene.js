@@ -31,7 +31,7 @@ export default class HomeScene extends Phaser.Scene {
 
     // Моргание (смена текстуры)
     this.time.addEvent({
-      delay: Phaser.Math.Between(3000, 6000),
+      delay: Phaser.Math.Between(2000, 4000),
       loop: true,
       callback: () => {
         dino.setTexture('dino_closed');
@@ -44,22 +44,22 @@ export default class HomeScene extends Phaser.Scene {
     // Клик по экрану
     this.input.on('pointerdown', () => {
       // Анимация динозавра
-      this.tweens.add({
-        targets: dino,
-        scaleX: 1.1,
-        scaleY: 0.9,
-        angle: -5,
-        yoyo: true,
-        duration: 100
-      });
+      // this.tweens.add({
+      //   targets: dino,
+      //   scaleX: 1.1,
+      //   scaleY: 0.9,
+      //   angle: -5,
+      //   yoyo: true,
+      //   duration: 100
+      // });
 
       // Монета, вылетающая из динозавра
-      const coin = this.add.image(dino.x, dino.y - 50, 'coin').setScale(0.5);
+      const coin = this.add.image(dino.x, dino.y + 50, 'coin').setScale(0.5);
       this.tweens.add({
         targets: coin,
         y: coin.y - 50,
         alpha: 0,
-        duration: 500,
+        duration: 800,
         onComplete: () => coin.destroy()
       });
 
