@@ -54,7 +54,7 @@ export default class HomeScene extends Phaser.Scene {
       // });
 
       // Монета, вылетающая из динозавра
-      const coin = this.add.image(dino.x, dino.y + 50, 'coin').setScale(0.5);
+      const coin = this.add.image(dino.x, dino.y - 150, 'coin').setScale(0.5);
       this.tweens.add({
         targets: coin,
         y: coin.y - 50,
