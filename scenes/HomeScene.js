@@ -8,6 +8,7 @@ export default class HomeScene extends Phaser.Scene {
     this.load.image('dino_open', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/dino_open.png');
     this.load.image('dino_closed', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/dino_closed.png');
     this.load.image('coin', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/coin.png');
+    this.load.image('menuBtn', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/menuBtn.png');
   }
 
   create() {
@@ -58,7 +59,7 @@ export default class HomeScene extends Phaser.Scene {
         duration: 100
       });
 
-      // Монета (поднята выше на +50px)
+      // Монета (поднята выше)
       const coin = this.add.image(dino.x, dino.y - 100, 'coin')
         .setScale(0.5)
         .setDepth(2);
@@ -75,20 +76,34 @@ export default class HomeScene extends Phaser.Scene {
       counter.setText(`Coins: ${coins}`);
     });
 
-    // Нижнее меню
     this.addNavigation();
   }
 
   addNavigation() {
-    const names = ['Home', 'Shop', 'Battle', 'Help'];
-    names.forEach((name, i) => {
-      const btn = this.add.text(80 * i + 20, this.scale.height - 40, name, {
+    const buttonWidth = 150;
+    const buttonHeight = 50;
+    const spacing = 20;
+    const centerX = this.cameras.main.centerX;
+    const bottomY = this.scale.height - 60;
+
+    const buttonNames = ['Home', 'Shop', 'Battle', 'Help'];
+
+    buttonNames.forEach((name, i) => {
+      const x = centerX - ((buttonNames.length - 1) * (buttonWidth + spacing)) / 2 + i * (buttonWidth + spacing);
+      const y = bottomY;
+
+      const bg = this.add.image(0, 0, 'menuBtn').setDisplaySize(buttonWidth, buttonHeight);
+      const label = this.add.text(0, 0, name, {
         fontSize: '18px',
-        backgroundColor: '#444',
-        padding: 5,
-        fill: '#fff'
-      }).setInteractive().setDepth(2);
-      btn.on('pointerdown', () => this.scene.start(name));
+        color: '#fff',
+        fontFamily: 'Arial'
+      }).setOrigin(0.5);
+
+      const container = this.add.container(x, y, [bg, label])
+        .setSize(buttonWidth, buttonHeight)
+        .setInteractive();
+
+      container.on('pointerdown', () => this.scene.start(name));
     });
   }
 }
