@@ -3,6 +3,12 @@ export default class HomeScene extends Phaser.Scene {
     super('Home');
   }
 
+  preload() {
+  this.load.image('dino_open', 'assets/dino_open.png');
+  this.load.image('dino_closed', 'assets/dino_closed.png');
+  this.load.image('coin', 'assets/coin.png');
+}
+
   create() {
     const centerX = this.cameras.main.centerX;
     const centerY = this.cameras.main.centerY;
