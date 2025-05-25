@@ -4,9 +4,9 @@ export default class HomeScene extends Phaser.Scene {
   }
 
   preload() {
-  this.load.image('dino_open', 'assets/dino_open.png');
-  this.load.image('dino_closed', 'assets/dino_closed.png');
-  this.load.image('coin', 'assets/coin.png');
+  this.load.image('dino_open', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/dino_open.png');
+  this.load.image('dino_closed', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/dino_closed.png');
+  this.load.image('coin', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/coin.png');
 }
 
   create() {
