@@ -79,31 +79,33 @@ export default class HomeScene extends Phaser.Scene {
     this.addNavigation();
   }
 
-  addNavigation() {
-    const buttonWidth = 150;
-    const buttonHeight = 50;
-    const spacing = 20;
-    const centerX = this.cameras.main.centerX;
-    const bottomY = this.scale.height - 60;
+ addNavigation() {
+  const buttonNames = ['Home', 'Shop', 'Battle', 'Help'];
+  const buttonCount = buttonNames.length;
 
-    const buttonNames = ['Home', 'Shop', 'Battle', 'Help'];
+  const spacing = 20;
+  const buttonWidth = 120; // логическая ширина, не влияет на спрайт
+  const totalWidth = (buttonCount - 1) * spacing + buttonCount * buttonWidth;
+  const startX = this.cameras.main.centerX - totalWidth / 2;
+  const y = this.scale.height - 60;
 
-    buttonNames.forEach((name, i) => {
-      const x = centerX - ((buttonNames.length - 1) * (buttonWidth + spacing)) / 2 + i * (buttonWidth + spacing);
-      const y = bottomY;
+  buttonNames.forEach((name, i) => {
+    const x = startX + i * (buttonWidth + spacing);
 
-      const bg = this.add.image(0, 0, 'menuBtn').setDisplaySize(buttonWidth, buttonHeight);
-      const label = this.add.text(0, 0, name, {
-        fontSize: '18px',
-        color: '#fff',
-        fontFamily: 'Arial'
-      }).setOrigin(0.5);
+    const bg = this.add.image(0, 0, 'menuBtn').setOrigin(0.5).setScale(1);
+    const label = this.add.text(0, 0, name, {
+      fontSize: '18px',
+      color: '#fff',
+      fontFamily: 'Arial'
+    }).setOrigin(0.5);
 
-      const container = this.add.container(x, y, [bg, label])
-        .setSize(buttonWidth, buttonHeight)
-        .setInteractive();
+    const container = this.add.container(x, y, [bg, label])
+      .setSize(bg.width, bg.height)
+      .setInteractive()
+      .setDepth(3);
 
-      container.on('pointerdown', () => this.scene.start(name));
-    });
-  }
+    container.on('pointerdown', () => this.scene.start(name));
+  });
+}
+
 }
