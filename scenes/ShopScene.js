@@ -1,18 +1,38 @@
 export default class ShopScene extends Phaser.Scene {
-  constructor() { super('Shop'); }
+  constructor() {
+    super('Shop');
+  }
 
   create() {
-    this.add.text(100, 100, '🛒 Магазин: купи бустер за 49 Stars', { fontSize: '18px', fill: '#fff' });
+    this.add.text(100, 50, '🛒 Магазин бустеров (тест)', { fontSize: '18px', fill: '#fff' });
 
-    const buy = this.add.text(100, 150, '[ Купить ]', { fontSize: '20px', fill: '#0ff' }).setInteractive();
-    buy.on('pointerdown', () => {
-      Telegram.WebApp.openInvoice({
-        provider_token: "", // боевой токен — если есть
-        title: "Booster Pack",
-        description: "3 случайные карты",
-        payload: "booster1",
-        currency: "XTR",
-        prices: [{ label: "Booster", amount: 4900 }]
+    if (!window.boosters) {
+      window.boosters = {
+        boosterFarm: false,
+        boosterSpeed: false,
+        boosterAuto: false,
+        boosterLuck: false,
+        boosterDefense: false
+      };
+    }
+
+    const boosters = [
+      { label: 'Фарм x2', key: 'boosterFarm', y: 100 },
+      { label: 'Скорость', key: 'boosterSpeed', y: 150 },
+      { label: 'Автоклик', key: 'boosterAuto', y: 200 },
+      { label: 'Удача', key: 'boosterLuck', y: 250 },
+      { label: 'Защита', key: 'boosterDefense', y: 300 }
+    ];
+
+    boosters.forEach(({ label, key, y }) => {
+      const btn = this.add.text(100, y, `[ Купить ${label} ]`, {
+        fontSize: '18px',
+        fill: '#0ff'
+      }).setInteractive();
+
+      btn.on('pointerdown', () => {
+        window.boosters[key] = true;
+        console.log(`✅ ${label} активирован`);
       });
     });
 
