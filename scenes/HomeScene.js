@@ -22,6 +22,17 @@ export default class HomeScene extends Phaser.Scene {
     bg.setScale(scale);
     bg.setDepth(0);
 
+    // Проверка и отрисовка бустера (тест)
+    if (window.boosters?.boosterFarm) {
+      this.add.rectangle(centerX, centerY - 150, 60, 60, 0x00ff00)
+        .setStrokeStyle(2, 0x006600)
+        .setDepth(2);
+      this.add.text(centerX, centerY - 180, 'Фарм x2', {
+        fontSize: '14px',
+        color: '#0f0'
+      }).setOrigin(0.5).setDepth(2);
+    }
+
     // Счётчик монет
     let coins = 0;
     const counter = this.add.text(20, 20, 'Coins: 0', {
@@ -79,38 +90,35 @@ export default class HomeScene extends Phaser.Scene {
     this.addNavigation();
   }
 
-addNavigation() {
-  const buttonNames = ['Home', 'Shop', 'Battle', 'Help'];
-  const buttonWidth = 100;
-  const buttonHeight = 40;
-  const spacing = 12;
-  const totalWidth = buttonNames.length * buttonWidth + (buttonNames.length - 1) * spacing;
+  addNavigation() {
+    const buttonNames = ['Home', 'Shop', 'Battle', 'Help'];
+    const buttonWidth = 100;
+    const buttonHeight = 40;
+    const spacing = 12;
+    const totalWidth = buttonNames.length * buttonWidth + (buttonNames.length - 1) * spacing;
 
-  const startX = this.cameras.main.centerX - totalWidth / 2;
-  const y = this.scale.height - 50;
+    const startX = this.cameras.main.centerX - totalWidth / 2;
+    const y = this.scale.height - 50;
 
-  buttonNames.forEach((name, i) => {
-    const x = startX + i * (buttonWidth + spacing);
+    buttonNames.forEach((name, i) => {
+      const x = startX + i * (buttonWidth + spacing);
 
-    const bg = this.add.image(0, 0, 'menuBtn')
-      .setDisplaySize(buttonWidth, buttonHeight)
-      .setOrigin(0.5);
+      const bg = this.add.image(0, 0, 'menuBtn')
+        .setDisplaySize(buttonWidth, buttonHeight)
+        .setOrigin(0.5);
 
-    const label = this.add.text(0, 0, name, {
-      fontSize: '16px',
-      fontFamily: 'Arial',
-      color: '#fff'
-    }).setOrigin(0.5);
+      const label = this.add.text(0, 0, name, {
+        fontSize: '16px',
+        fontFamily: 'Arial',
+        color: '#fff'
+      }).setOrigin(0.5);
 
-    const container = this.add.container(x + buttonWidth / 2, y, [bg, label])
-      .setSize(buttonWidth, buttonHeight)
-      .setInteractive()
-      .setDepth(3);
+      const container = this.add.container(x + buttonWidth / 2, y, [bg, label])
+        .setSize(buttonWidth, buttonHeight)
+        .setInteractive()
+        .setDepth(3);
 
-    container.on('pointerdown', () => this.scene.start(name));
-  });
-}
-
-
-
+      container.on('pointerdown', () => this.scene.start(name));
+    });
+  }
 }
