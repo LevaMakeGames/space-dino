@@ -98,8 +98,8 @@ addNavigation() {
     { name: 'About', label: 'ABOUT' }
   ];
 
-  const padding = 14;
-  const buttonHeight = 44;
+  const padding = 10;
+  const buttonHeight = 64;
   const y = this.scale.height - 50;
 
   const buttonCount = buttons.length;
