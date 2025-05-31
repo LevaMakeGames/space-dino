@@ -100,14 +100,14 @@ addNavigation() {
 
   const buttonWidth = 130;
   const buttonHeight = 44;
-  const sidePadding = 20;
+  const spacing = 20;
+  const totalWidth = buttons.length * buttonWidth + (buttons.length - 1) * spacing;
 
-  const availableWidth = this.scale.width - sidePadding * 2;
-  const spacing = (availableWidth - buttons.length * buttonWidth) / (buttons.length - 1);
+  const startX = this.cameras.main.centerX - totalWidth / 2;
   const y = this.scale.height - 50;
 
   buttons.forEach((btn, i) => {
-    const x = sidePadding + i * (buttonWidth + spacing);
+    const x = startX + i * (buttonWidth + spacing);
 
     const bg = this.add.image(0, 0, 'menuBtn')
       .setDisplaySize(buttonWidth, buttonHeight)
@@ -121,7 +121,7 @@ addNavigation() {
       wordWrap: { width: buttonWidth - 10 }
     }).setOrigin(0.5);
 
-    const container = this.add.container(x + buttonWidth / 2, y, [bg, label])
+    const container = this.add.container(x, y, [bg, label])
       .setSize(buttonWidth, buttonHeight)
       .setInteractive()
       .setDepth(3);
@@ -129,6 +129,7 @@ addNavigation() {
     container.on('pointerdown', () => this.scene.start(btn.name));
   });
 }
+
 
 
 }
