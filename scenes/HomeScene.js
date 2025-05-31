@@ -12,6 +12,16 @@ export default class HomeScene extends Phaser.Scene {
   }
 
   create() {
+    if (!window.boosters) {
+      window.boosters = {
+        boosterFarm: false,
+        boosterSpeed: false,
+        boosterAuto: false,
+        boosterLuck: false,
+        boosterGold: false
+      };
+    }
+
     const { centerX, centerY, width, height } = this.cameras.main;
 
     // Фон
@@ -22,19 +32,9 @@ export default class HomeScene extends Phaser.Scene {
     bg.setScale(scale);
     bg.setDepth(0);
 
-    // Проверка и отрисовка бустера (тест)
-    if (window.boosters?.boosterFarm) {
-      this.add.rectangle(centerX, centerY - 150, 60, 60, 0x00ff00)
-        .setStrokeStyle(2, 0x006600)
-        .setDepth(2);
-      this.add.text(centerX, centerY - 180, 'Фарм x2', {
-        fontSize: '14px',
-        color: '#0f0'
-      }).setOrigin(0.5).setDepth(2);
-    }
-
     // Счётчик монет
     let coins = 0;
+    let clickCount = 0;
     const counter = this.add.text(20, 20, 'Coins: 0', {
       fontSize: '24px',
       fill: '#0f0'
@@ -56,6 +56,18 @@ export default class HomeScene extends Phaser.Scene {
       }
     });
 
+    // Эффект: автоклик
+    if (window.boosters.boosterAuto) {
+      this.time.addEvent({
+        delay: 1000,
+        loop: true,
+        callback: () => {
+          coins++;
+          counter.setText(`Coins: ${coins}`);
+        }
+      });
+    }
+
     // Клик по экрану
     this.input.on('pointerdown', () => {
       if (this.dinoTween && this.dinoTween.isPlaying()) return;
@@ -70,7 +82,7 @@ export default class HomeScene extends Phaser.Scene {
         duration: 100
       });
 
-      // Монета (поднята выше)
+      // Монета
       const coin = this.add.image(dino.x, dino.y - 100, 'coin')
         .setScale(0.5)
         .setDepth(2);
@@ -82,55 +94,87 @@ export default class HomeScene extends Phaser.Scene {
         onComplete: () => coin.destroy()
       });
 
-      // Счётчик
-      coins++;
+      // Подсчёт монет с учётом бустеров
+      let clickValue = 1;
+      clickCount++;
+
+      if (window.boosters.boosterFarm) clickValue += 1;
+      if (window.boosters.boosterSpeed) clickValue *= 2;
+      if (window.boosters.boosterLuck && Math.random() < 0.25) clickValue += 3;
+      if (window.boosters.boosterGold && clickCount % 5 === 0) clickValue += 10;
+
+      coins += clickValue;
       counter.setText(`Coins: ${coins}`);
+    });
+
+    // Визуальные квадраты бустеров
+    const boosterList = [
+      { key: 'boosterFarm', label: 'FARM x2' },
+      { key: 'boosterAuto', label: 'AUTO CLICK' },
+      { key: 'boosterSpeed', label: 'DOUBLE TAP' },
+      { key: 'boosterLuck', label: 'LUCKY DINO' },
+      { key: 'boosterGold', label: 'GOLDEN TOUCH' }
+    ];
+
+    const boxWidth = 40;
+    const boxHeight = 40;
+    const spacingY = 20;
+    const totalHeight = boosterList.length * boxHeight + (boosterList.length - 1) * spacingY;
+    const startY = centerY - totalHeight / 2;
+    const boxX = centerX;
+
+    boosterList.forEach((b, i) => {
+      const y = startY + i * (boxHeight + spacingY);
+      const color = window.boosters[b.key] ? 0x00ff00 : 0x666666;
+
+      this.add.rectangle(boxX + 60, y, boxWidth, boxHeight, color).setOrigin(0.5);
+      this.add.text(boxX - 60, y, b.label, {
+        fontSize: '16px',
+        color: '#fff'
+      }).setOrigin(1, 0.5);
     });
 
     this.addNavigation();
   }
 
-addNavigation() {
-  const buttons = [
-    { name: 'Shop', label: 'SHOP' },
-    { name: 'Cards', label: 'CARDS' },
-    { name: 'Battle', label: 'BATTLE' },
-    { name: 'About', label: 'ABOUT' }
-  ];
+  addNavigation() {
+    const buttons = [
+      { name: 'Shop', label: 'SHOP' },
+      { name: 'Cards', label: 'CARDS' },
+      { name: 'Battle', label: 'BATTLE' },
+      { name: 'About', label: 'ABOUT' }
+    ];
 
-  const padding = 10;
-  const buttonHeight = 64;
-  const y = this.scale.height - 50;
+    const padding = 10;
+    const buttonHeight = 64;
+    const y = this.scale.height - 50;
 
-  const buttonCount = buttons.length;
-  const totalSpacing = padding * (buttonCount + 1);
-  const availableWidth = this.scale.width - totalSpacing;
-  const buttonWidth = availableWidth / buttonCount;
+    const buttonCount = buttons.length;
+    const totalSpacing = padding * (buttonCount + 1);
+    const availableWidth = this.scale.width - totalSpacing;
+    const buttonWidth = availableWidth / buttonCount;
 
-  buttons.forEach((btn, i) => {
-    const x = padding + i * (buttonWidth + padding);
+    buttons.forEach((btn, i) => {
+      const x = padding + i * (buttonWidth + padding);
 
-    const bg = this.add.image(0, 0, 'menuBtn')
-      .setDisplaySize(buttonWidth, buttonHeight)
-      .setOrigin(0.5);
+      const bg = this.add.image(0, 0, 'menuBtn')
+        .setDisplaySize(buttonWidth, buttonHeight)
+        .setOrigin(0.5);
 
-    const label = this.add.text(0, 0, btn.label, {
-      fontSize: '16px',
-      fontFamily: 'Arial',
-      color: '#fff',
-      align: 'center',
-      wordWrap: { width: buttonWidth - 10 }
-    }).setOrigin(0.5);
+      const label = this.add.text(0, 0, btn.label, {
+        fontSize: '16px',
+        fontFamily: 'Arial',
+        color: '#fff',
+        align: 'center',
+        wordWrap: { width: buttonWidth - 10 }
+      }).setOrigin(0.5);
 
-    const container = this.add.container(x + buttonWidth / 2, y, [bg, label])
-      .setSize(buttonWidth, buttonHeight)
-      .setInteractive()
-      .setDepth(3);
+      const container = this.add.container(x + buttonWidth / 2, y, [bg, label])
+        .setSize(buttonWidth, buttonHeight)
+        .setInteractive()
+        .setDepth(3);
 
-    container.on('pointerdown', () => this.scene.start(btn.name));
-  });
-}
-
-
-
+      container.on('pointerdown', () => this.scene.start(btn.name));
+    });
+  }
 }
