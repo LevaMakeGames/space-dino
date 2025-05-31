@@ -4,7 +4,10 @@ export default class ShopScene extends Phaser.Scene {
   }
 
   create() {
-    this.add.text(100, 50, '🛒 Магазин бустеров (тест)', { fontSize: '18px', fill: '#fff' });
+    this.add.text(this.cameras.main.centerX, 40, 'BOOSTER SHOP', {
+      fontSize: '22px',
+      color: '#fff'
+    }).setOrigin(0.5);
 
     if (!window.boosters) {
       window.boosters = {
@@ -12,27 +15,43 @@ export default class ShopScene extends Phaser.Scene {
         boosterSpeed: false,
         boosterAuto: false,
         boosterLuck: false,
-        boosterDefense: false
+        boosterGold: false
       };
     }
 
     const boosters = [
-      { label: 'Фарм x2', key: 'boosterFarm', y: 100 },
-      { label: 'Скорость', key: 'boosterSpeed', y: 150 },
-      { label: 'Автоклик', key: 'boosterAuto', y: 200 },
-      { label: 'Удача', key: 'boosterLuck', y: 250 },
-      { label: 'Защита', key: 'boosterDefense', y: 300 }
+      { label: 'FARM x2', key: 'boosterFarm' },
+      { label: 'AUTO CLICK', key: 'boosterAuto' },
+      { label: 'DOUBLE TAP', key: 'boosterSpeed' },
+      { label: 'LUCKY DINO', key: 'boosterLuck' },
+      { label: 'GOLDEN TOUCH', key: 'boosterGold' }
     ];
 
-    boosters.forEach(({ label, key, y }) => {
-      const btn = this.add.text(100, y, `[ Купить ${label} ]`, {
+    const buttonWidth = 200;
+    const buttonHeight = 50;
+    const startY = 100;
+    const spacingY = 60;
+
+    boosters.forEach((booster, i) => {
+      const x = this.cameras.main.centerX;
+      const y = startY + i * spacingY;
+
+      const bg = this.add.image(0, 0, 'menuBtn')
+        .setDisplaySize(buttonWidth, buttonHeight)
+        .setOrigin(0.5);
+
+      const label = this.add.text(0, 0, booster.label, {
         fontSize: '18px',
-        fill: '#0ff'
-      }).setInteractive();
+        color: '#fff'
+      }).setOrigin(0.5);
+
+      const btn = this.add.container(x, y, [bg, label])
+        .setSize(buttonWidth, buttonHeight)
+        .setInteractive();
 
       btn.on('pointerdown', () => {
-        window.boosters[key] = true;
-        console.log(`✅ ${label} активирован`);
+        window.boosters[booster.key] = true;
+        console.log(`✅ ${booster.label} activated`);
       });
     });
 
