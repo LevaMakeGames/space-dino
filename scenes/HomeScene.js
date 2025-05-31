@@ -90,35 +90,42 @@ export default class HomeScene extends Phaser.Scene {
     this.addNavigation();
   }
 
-  addNavigation() {
-    const buttonNames = ['Home', 'Shop', 'Battle', 'Help'];
-    const buttonWidth = 100;
-    const buttonHeight = 40;
-    const spacing = 12;
-    const totalWidth = buttonNames.length * buttonWidth + (buttonNames.length - 1) * spacing;
+ addNavigation() {
+  const buttons = [
+    { name: 'Shop', label: 'Магазин' },
+    { name: 'Cards', label: 'Карточки' },
+    { name: 'Battle', label: 'В бой' },
+    { name: 'Help', label: 'Как играть' }
+  ];
 
-    const startX = this.cameras.main.centerX - totalWidth / 2;
-    const y = this.scale.height - 50;
+  const buttonWidth = 120;
+  const buttonHeight = 44;
+  const sidePadding = 20;
 
-    buttonNames.forEach((name, i) => {
-      const x = startX + i * (buttonWidth + spacing);
+  const availableWidth = this.scale.width - sidePadding * 2;
+  const spacing = (availableWidth - buttons.length * buttonWidth) / (buttons.length - 1);
+  const y = this.scale.height - 50;
 
-      const bg = this.add.image(0, 0, 'menuBtn')
-        .setDisplaySize(buttonWidth, buttonHeight)
-        .setOrigin(0.5);
+  buttons.forEach((btn, i) => {
+    const x = sidePadding + i * (buttonWidth + spacing);
 
-      const label = this.add.text(0, 0, name, {
-        fontSize: '16px',
-        fontFamily: 'Arial',
-        color: '#fff'
-      }).setOrigin(0.5);
+    const bg = this.add.image(0, 0, 'menuBtn')
+      .setDisplaySize(buttonWidth, buttonHeight)
+      .setOrigin(0.5);
 
-      const container = this.add.container(x + buttonWidth / 2, y, [bg, label])
-        .setSize(buttonWidth, buttonHeight)
-        .setInteractive()
-        .setDepth(3);
+    const label = this.add.text(0, 0, btn.label, {
+      fontSize: '16px',
+      fontFamily: 'Arial',
+      color: '#fff'
+    }).setOrigin(0.5);
 
-      container.on('pointerdown', () => this.scene.start(name));
-    });
-  }
+    const container = this.add.container(x + buttonWidth / 2, y, [bg, label])
+      .setSize(buttonWidth, buttonHeight)
+      .setInteractive()
+      .setDepth(3);
+
+    container.on('pointerdown', () => this.scene.start(btn.name));
+  });
+}
+
 }
