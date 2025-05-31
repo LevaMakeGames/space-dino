@@ -90,15 +90,15 @@ export default class HomeScene extends Phaser.Scene {
     this.addNavigation();
   }
 
- addNavigation() {
+addNavigation() {
   const buttons = [
-    { name: 'Shop', label: 'Магазин' },
-    { name: 'Cards', label: 'Карточки' },
-    { name: 'Battle', label: 'В бой' },
-    { name: 'Help', label: 'Как играть' }
+    { name: 'Shop', label: 'SHOP' },
+    { name: 'Cards', label: 'CARDS' },
+    { name: 'Battle', label: 'BATTLE' },
+    { name: 'About', label: 'ABOUT' }
   ];
 
-  const buttonWidth = 120;
+  const buttonWidth = 130;
   const buttonHeight = 44;
   const sidePadding = 20;
 
@@ -116,7 +116,9 @@ export default class HomeScene extends Phaser.Scene {
     const label = this.add.text(0, 0, btn.label, {
       fontSize: '16px',
       fontFamily: 'Arial',
-      color: '#fff'
+      color: '#fff',
+      align: 'center',
+      wordWrap: { width: buttonWidth - 10 }
     }).setOrigin(0.5);
 
     const container = this.add.container(x + buttonWidth / 2, y, [bg, label])
@@ -127,5 +129,6 @@ export default class HomeScene extends Phaser.Scene {
     container.on('pointerdown', () => this.scene.start(btn.name));
   });
 }
+
 
 }
