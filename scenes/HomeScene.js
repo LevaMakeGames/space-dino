@@ -98,16 +98,17 @@ addNavigation() {
     { name: 'About', label: 'ABOUT' }
   ];
 
-  const buttonWidth = 130;
+  const padding = 24;
   const buttonHeight = 44;
-  const spacing = 20;
-  const totalWidth = buttons.length * buttonWidth + (buttons.length - 1) * spacing;
-
-  const startX = this.cameras.main.centerX - totalWidth / 2;
   const y = this.scale.height - 50;
 
+  const buttonCount = buttons.length;
+  const totalSpacing = padding * (buttonCount + 1);
+  const availableWidth = this.scale.width - totalSpacing;
+  const buttonWidth = availableWidth / buttonCount;
+
   buttons.forEach((btn, i) => {
-    const x = startX + i * (buttonWidth + spacing);
+    const x = padding + i * (buttonWidth + padding);
 
     const bg = this.add.image(0, 0, 'menuBtn')
       .setDisplaySize(buttonWidth, buttonHeight)
@@ -121,7 +122,7 @@ addNavigation() {
       wordWrap: { width: buttonWidth - 10 }
     }).setOrigin(0.5);
 
-    const container = this.add.container(x, y, [bg, label])
+    const container = this.add.container(x + buttonWidth / 2, y, [bg, label])
       .setSize(buttonWidth, buttonHeight)
       .setInteractive()
       .setDepth(3);
