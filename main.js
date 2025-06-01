@@ -1,5 +1,6 @@
 import HomeScene from './scenes/HomeScene.js';
 import ShopScene from './scenes/ShopScene.js';
+import CardsScene from './scenes/CardsScene.js';
 import BattleScene from './scenes/BattleScene.js';
 import HelpScene from './scenes/HelpScene.js';
 
@@ -11,7 +12,14 @@ const config = {
   width: window.innerWidth,
   height: window.innerHeight,
   backgroundColor: '#000000',
-  scene: [HomeScene, ShopScene, BattleScene, HelpScene]
+  scene: [
+    HomeScene,
+    ShopScene,
+    CardsScene,
+    BattleScene,
+    HelpScene
+  ]
 };
 
 new Phaser.Game(config);
+
