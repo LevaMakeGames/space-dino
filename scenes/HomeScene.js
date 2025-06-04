@@ -9,6 +9,13 @@ export default class HomeScene extends Phaser.Scene {
     this.load.image('dino_closed', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/dino_closed.png');
     this.load.image('coin', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/coin.png');
     this.load.image('menuBtn', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/menuBtn.png');
+
+    this.load.image('b_0', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/b_0.png');
+    this.load.image('b_1', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/b_1.png');
+    this.load.image('b_2', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/b_2.png');
+    this.load.image('b_3', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/b_3.png');
+    this.load.image('b_4', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/b_4.png');
+    this.load.image('b_5', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/b_5.png');
   }
 
   create() {
@@ -56,7 +63,7 @@ export default class HomeScene extends Phaser.Scene {
       }
     });
 
-    // Эффект: автоклик
+    // Автоклик
     if (window.boosters.boosterAuto) {
       this.time.addEvent({
         delay: 1000,
@@ -68,11 +75,10 @@ export default class HomeScene extends Phaser.Scene {
       });
     }
 
-    // Клик по экрану
+    // Клик
     this.input.on('pointerdown', () => {
       if (this.dinoTween && this.dinoTween.isPlaying()) return;
 
-      // Анимация динозавра
       this.dinoTween = this.tweens.add({
         targets: dino,
         scaleX: 1.1,
@@ -82,7 +88,6 @@ export default class HomeScene extends Phaser.Scene {
         duration: 100
       });
 
-      // Монета
       const coin = this.add.image(dino.x, dino.y - 100, 'coin')
         .setScale(0.5)
         .setDepth(2);
@@ -94,7 +99,6 @@ export default class HomeScene extends Phaser.Scene {
         onComplete: () => coin.destroy()
       });
 
-      // Подсчёт монет с учётом бустеров
       let clickValue = 1;
       clickCount++;
 
@@ -107,31 +111,36 @@ export default class HomeScene extends Phaser.Scene {
       counter.setText(`Coins: ${coins}`);
     });
 
-    // Визуальные квадраты бустеров
-    const boosterList = [
-      { key: 'boosterFarm', label: 'FARM x2' },
-      { key: 'boosterAuto', label: 'AUTO CLICK' },
-      { key: 'boosterSpeed', label: 'DOUBLE TAP' },
-      { key: 'boosterLuck', label: 'LUCKY DINO' },
-      { key: 'boosterGold', label: 'GOLDEN TOUCH' }
+    // Спрайты бустеров: 3 сверху, 2 снизу
+    const boosterKeys = [
+      'boosterFarm',
+      'boosterAuto',
+      'boosterSpeed',
+      'boosterLuck',
+      'boosterGold'
     ];
 
-    const boxWidth = 40;
-    const boxHeight = 40;
-    const spacingY = 20;
-    const totalHeight = boosterList.length * boxHeight + (boosterList.length - 1) * spacingY;
-    const startY = centerY - totalHeight / 2;
-    const boxX = centerX;
+    const icons = boosterKeys.map((key, i) =>
+      window.boosters[key] ? `b_${i + 1}` : 'b_0'
+    );
 
-    boosterList.forEach((b, i) => {
-      const y = startY + i * (boxHeight + spacingY);
-      const color = window.boosters[b.key] ? 0x00ff00 : 0x666666;
+    const spriteSize = 80;
+    const spacing = 30;
+    const topOffset = height * 0.2;
 
-      this.add.rectangle(boxX + 60, y, boxWidth, boxHeight, color).setOrigin(0.5);
-      this.add.text(boxX - 60, y, b.label, {
-        fontSize: '16px',
-        color: '#fff'
-      }).setOrigin(1, 0.5);
+    const positions = [
+      { x: centerX - spriteSize - spacing, y: topOffset },
+      { x: centerX,                       y: topOffset },
+      { x: centerX + spriteSize + spacing, y: topOffset },
+      { x: centerX - spriteSize / 2 - spacing / 2, y: topOffset + spriteSize + spacing },
+      { x: centerX + spriteSize / 2 + spacing / 2, y: topOffset + spriteSize + spacing }
+    ];
+
+    icons.forEach((iconKey, i) => {
+      this.add.image(positions[i].x, positions[i].y, iconKey)
+        .setDisplaySize(spriteSize, spriteSize)
+        .setOrigin(0.5)
+        .setDepth(2);
     });
 
     this.addNavigation();
