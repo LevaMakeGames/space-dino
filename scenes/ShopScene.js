@@ -6,20 +6,14 @@ export default class ShopScene extends Phaser.Scene {
   create() {
     const { centerX, width } = this.cameras.main;
 
-    // Валюта и бюджет
+    // 💎 Стартовый бюджет
     if (!window.diamonds) window.diamonds = 300;
-    const diamondText = this.add.text(60, 22, `${window.diamonds}`, {
-      fontSize: '20px', color: '#fff'
-    }).setOrigin(0, 0.5);
-    this.add.text(30, 22, '💎', {
-      fontSize: '20px'
-    }).setOrigin(0.5);
 
-    // BACK кнопка
-    const backBox = this.add.rectangle(width - 80, 22, 100, 36, 0x333333, 0.8)
+    // 🔙 Кнопка назад справа
+    const backBox = this.add.rectangle(width - 70, 22, 100, 36, 0x333333, 0.8)
       .setOrigin(0.5)
       .setStrokeStyle(2, 0xffffff);
-    const backText = this.add.text(width - 80, 22, '← BACK', {
+    const backText = this.add.text(width - 70, 22, '← BACK', {
       fontSize: '16px', color: '#fff'
     }).setOrigin(0.5);
     this.add.container(0, 0, [backBox, backText])
@@ -27,12 +21,21 @@ export default class ShopScene extends Phaser.Scene {
       .setInteractive()
       .on('pointerdown', () => this.scene.start('Home'));
 
-    // Заголовок
-    this.add.text(centerX, 70, 'BOOSTER SHOP', {
-      fontSize: '28px', color: '#fff'
+    // 💎 Слева алмазы
+    this.add.text(30, 22, '💎', {
+      fontSize: '20px'
+    }).setOrigin(0.5);
+    this.diamondText = this.add.text(60, 22, `${window.diamonds}`, {
+      fontSize: '20px', color: '#fff'
+    }).setOrigin(0, 0.5);
+
+    // 🏷️ Заголовок
+    this.add.text(centerX, 100, 'BOOSTER SHOP', {
+      fontSize: '30px',
+      color: '#ffffff'
     }).setOrigin(0.5);
 
-    // Инициализация бустеров
+    // ⚙️ Инициализация бустеров
     if (!window.boosters) {
       window.boosters = {
         boosterFarm: false,
@@ -51,65 +54,81 @@ export default class ShopScene extends Phaser.Scene {
       { label: 'GOLDEN TOUCH', desc: '+10/5 taps', key: 'boosterGold' }
     ];
 
-    const buttonWidth = 220;
-    const buttonHeight = 70;
+    const buttonWidth = 240;
+    const buttonHeight = 80;
     const spacingY = 24;
-    const startY = 130;
+    const startY = 160;
 
     boosters.forEach((booster, i) => {
       const x = centerX;
       const y = startY + i * (buttonHeight + spacingY);
       const isActive = window.boosters[booster.key];
 
-      const bg = this.add.rectangle(0, 0, buttonWidth, buttonHeight, isActive ? 0x007700 : 0x444444)
-        .setStrokeStyle(2, 0xffffff)
-        .setOrigin(0.5);
+      const bgColor = isActive ? 0x228B22 : 0x3355aa;
 
-      const title = this.add.text(0, -12, booster.label, {
-        fontSize: '16px', color: '#fff'
+      const bg = this.add.graphics();
+      bg.fillStyle(bgColor, 1);
+      bg.fillRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 12);
+
+      const frame = this.add.graphics();
+      frame.lineStyle(2, 0xffffff);
+      frame.strokeRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 12);
+
+      const title = this.add.text(0, -14, booster.label, {
+        fontSize: '17px',
+        color: '#fff'
       }).setOrigin(0.5);
 
-      const desc = this.add.text(0, 10, booster.desc, {
-        fontSize: '13px', color: '#dddddd'
+      const desc = this.add.text(0, 12, booster.desc, {
+        fontSize: '13px',
+        color: '#dddddd'
       }).setOrigin(0.5);
 
-      const priceText = this.add.text(buttonWidth / 2 - 40, 0, '💎 100', {
-        fontSize: '14px', color: '#fff'
-      }).setOrigin(0.5);
+      const priceText = this.add.text(buttonWidth / 2 - 12, -buttonHeight / 2 + 12, '💎 100', {
+        fontSize: '13px',
+        color: '#fff'
+      }).setOrigin(1, 0);
 
-      const btn = this.add.container(x, y, [bg, title, desc, priceText])
+      const container = this.add.container(x, y, [bg, frame, title, desc, priceText])
         .setSize(buttonWidth, buttonHeight)
-        .setInteractive();
+        .setInteractive(new Phaser.Geom.Rectangle(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight), Phaser.Geom.Rectangle.Contains);
 
-      btn.on('pointerdown', () => {
+      container.on('pointerdown', () => {
         if (window.boosters[booster.key]) return;
 
         if (window.diamonds >= 100) {
           window.diamonds -= 100;
           window.boosters[booster.key] = true;
-          diamondText.setText(`${window.diamonds}`);
-          bg.setFillStyle(0x007700);
+          this.diamondText.setText(`${window.diamonds}`);
 
+          // перекрасить
+          bg.clear();
+          bg.fillStyle(0x228B22, 1);
+          bg.fillRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 12);
+
+          // лёгкая анимация
           this.tweens.add({
-            targets: btn,
+            targets: container,
             scaleX: 1.05,
             scaleY: 1.05,
             yoyo: true,
             duration: 100
           });
         } else {
+          // тряска + предупреждение
           this.tweens.add({
-            targets: btn,
+            targets: container,
             x: x - 10,
             yoyo: true,
             duration: 60,
             repeat: 3,
-            onComplete: () => btn.setX(x)
+            onComplete: () => container.setX(x)
           });
 
-          const warn = this.add.text(centerX, y + 50, 'Not enough diamonds', {
-            fontSize: '14px', color: '#f55'
-          }).setOrigin(0.5).setAlpha(1);
+          const warn = this.add.text(x, y + 50, 'Not enough diamonds', {
+            fontSize: '14px',
+            color: '#f55'
+          }).setOrigin(0.5);
 
           this.tweens.add({
             targets: warn,
