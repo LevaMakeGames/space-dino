@@ -4,12 +4,10 @@ export default class ShopScene extends Phaser.Scene {
   }
 
   create() {
-    const { width, height, centerX } = this.cameras.main;
+    const { centerX, width } = this.cameras.main;
 
-    // Стартовые алмазы
-    if (window.diamonds === undefined) window.diamonds = 300;
+    if (!window.diamonds) window.diamonds = 300;
 
-    // Инициализация бустеров
     if (!window.boosters) {
       window.boosters = {
         boosterFarm: false,
@@ -20,95 +18,122 @@ export default class ShopScene extends Phaser.Scene {
       };
     }
 
-    // Верхняя панель
-    const panelY = 30;
-
-    // Кнопка "Назад"
-    const backBtn = this.add.text(20, panelY, '← BACK', {
-      fontSize: '20px',
-      fontFamily: 'Rajdhani',
-      backgroundColor: '#1e90ff',
-      padding: { left: 12, right: 12, top: 6, bottom: 6 },
-      color: '#fff'
-    }).setInteractive({ useHandCursor: true });
-
-    backBtn.on('pointerdown', () => this.scene.start('Home'));
-
-    // Счётчик алмазов
-    const diamondText = this.add.text(width - 20, panelY, `💎 ${window.diamonds}`, {
-      fontSize: '20px',
-      fontFamily: 'Rajdhani',
-      color: '#fff',
-      backgroundColor: '#1e90ff',
-      padding: { left: 12, right: 12, top: 6, bottom: 6 }
-    }).setOrigin(1, 0);
-
-    // Заголовок
-    this.add.text(centerX, panelY + 60, 'BOOSTER SHOP', {
-      fontSize: '28px',
+    // Назад ← (слева)
+    const backBox = this.add.rectangle(70, 22, 100, 36, 0x333333, 0.8)
+      .setOrigin(0.5)
+      .setStrokeStyle(2, 0xffffff);
+    const backText = this.add.text(70, 22, '← BACK', {
+      fontSize: '18px',
       fontFamily: 'Rajdhani',
       color: '#fff'
     }).setOrigin(0.5);
+    const backContainer = this.add.container(0, 0, [backBox, backText])
+      .setSize(100, 36)
+      .setInteractive(new Phaser.Geom.Rectangle(-50, -18, 100, 36), Phaser.Geom.Rectangle.Contains);
+    backContainer.on('pointerdown', () => this.scene.start('Home'));
 
-    // Данные бустеров
+    // Алмазы 💎 (справа)
+    this.add.text(width - 100, 22, '💎', {
+      fontSize: '22px',
+      fontFamily: 'Rajdhani'
+    }).setOrigin(0.5);
+    this.diamondText = this.add.text(width - 70, 22, `${window.diamonds}`, {
+      fontSize: '22px',
+      fontFamily: 'Rajdhani',
+      color: '#fff'
+    }).setOrigin(0, 0.5);
+
+    // Заголовок BOOSTER SHOP
+    this.add.text(centerX, 80, 'BOOSTER SHOP', {
+      fontSize: '24px',
+      fontFamily: 'Rajdhani',
+      color: '#ffffff'
+    }).setOrigin(0.5);
+
+    // Бустеры
     const boosters = [
-      { label: 'FARM x2', key: 'boosterFarm', desc: 'Больше монет за клик', cost: 100 },
-      { label: 'AUTO CLICK', key: 'boosterAuto', desc: 'Автокликер', cost: 100 },
-      { label: 'DOUBLE TAP', key: 'boosterSpeed', desc: 'Удваивает клики', cost: 100 },
-      { label: 'LUCKY DINO', key: 'boosterLuck', desc: 'Шанс бонуса', cost: 100 },
-      { label: 'GOLDEN TOUCH', key: 'boosterGold', desc: 'Каждый 5-й клик — +10', cost: 100 }
+      { label: 'FARM x2', desc: 'Doubles income', key: 'boosterFarm' },
+      { label: 'AUTO CLICK', desc: 'Clicks every sec', key: 'boosterAuto' },
+      { label: 'DOUBLE TAP', desc: 'x2 per click', key: 'boosterSpeed' },
+      { label: 'LUCKY DINO', desc: 'Bonus chance', key: 'boosterLuck' },
+      { label: 'GOLDEN TOUCH', desc: '+10/5 taps', key: 'boosterGold' }
     ];
 
-    const buttonWidth = 240;
+    const buttonWidth = 260;
     const buttonHeight = 80;
-    const spacingY = 20;
+    const spacingY = 24;
+    const startY = 140;
 
-    const totalHeight = boosters.length * (buttonHeight + spacingY);
-    const startY = panelY + 120;
-
-    // Кнопки бустеров
     boosters.forEach((booster, i) => {
       const x = centerX;
       const y = startY + i * (buttonHeight + spacingY);
       const isActive = window.boosters[booster.key];
-      const bgColor = isActive ? 0x00aa00 : 0x1e90ff;
+      const color = isActive ? 0x228B22 : 0x3355aa;
 
-      const bg = this.add.rectangle(0, 0, buttonWidth, buttonHeight, bgColor)
-        .setStrokeStyle(2, 0xffffff)
-        .setOrigin(0.5);
+      const bg = this.add.graphics();
+      bg.fillStyle(color, 1);
+      bg.fillRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 14);
 
-      const title = this.add.text(0, -16, booster.label, {
+      const frame = this.add.graphics();
+      frame.lineStyle(2, 0xffffff);
+      frame.strokeRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 14);
+
+      const labelWithPrice = this.add.text(0, -16, `${booster.label}    💎100`, {
         fontSize: '20px',
         fontFamily: 'Rajdhani',
-        color: '#fff'
+        color: '#ffffff'
       }).setOrigin(0.5);
 
-      const desc = this.add.text(0, 10, `${booster.desc}  💎${booster.cost}`, {
+      const desc = this.add.text(0, 16, booster.desc, {
         fontSize: '18px',
         fontFamily: 'Rajdhani',
-        color: '#fff'
+        color: '#dddddd'
       }).setOrigin(0.5);
 
-      const container = this.add.container(x, y, [bg, title, desc])
+      const container = this.add.container(x, y, [bg, frame, labelWithPrice, desc])
         .setSize(buttonWidth, buttonHeight)
-        .setInteractive({ useHandCursor: true });
+        .setInteractive(new Phaser.Geom.Rectangle(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight), Phaser.Geom.Rectangle.Contains);
 
       container.on('pointerdown', () => {
         if (window.boosters[booster.key]) return;
 
-        if (window.diamonds >= booster.cost) {
-          window.diamonds -= booster.cost;
+        if (window.diamonds >= 100) {
+          window.diamonds -= 100;
           window.boosters[booster.key] = true;
-          diamondText.setText(`💎 ${window.diamonds}`);
-          bg.setFillStyle(0x00aa00);
-        } else {
-          // Недостаточно алмазов — краткая анимация
+          this.diamondText.setText(`${window.diamonds}`);
+
+          bg.clear();
+          bg.fillStyle(0x228B22, 1);
+          bg.fillRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 14);
+
           this.tweens.add({
             targets: container,
-            x: x + 5,
-            duration: 60,
+            scaleX: 1.05,
+            scaleY: 1.05,
             yoyo: true,
-            repeat: 1
+            duration: 100
+          });
+        } else {
+          this.tweens.add({
+            targets: container,
+            x: x - 10,
+            yoyo: true,
+            duration: 60,
+            repeat: 3,
+            onComplete: () => container.setX(x)
+          });
+
+          const warn = this.add.text(x, y + 50, 'Not enough diamonds', {
+            fontSize: '14px',
+            fontFamily: 'Rajdhani',
+            color: '#f55'
+          }).setOrigin(0.5);
+
+          this.tweens.add({
+            targets: warn,
+            alpha: 0,
+            duration: 1000,
+            onComplete: () => warn.destroy()
           });
         }
       });
