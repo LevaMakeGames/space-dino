@@ -18,22 +18,19 @@ export default class ShopScene extends Phaser.Scene {
       };
     }
 
-    // 🔙 BACK
-    const backBox = this.add.rectangle(70, 22, 100, 36, 0x333333, 0.8)
-      .setOrigin(0.5)
-      .setStrokeStyle(2, 0xffffff);
-    const backText = this.add.text(70, 22, '← BACK', {
+    // 🔙 BACK (без контейнера)
+    this.add.text(20, 22, '← BACK', {
       fontSize: '18px',
       fontFamily: 'Rajdhani',
+      backgroundColor: '#333333',
+      padding: { left: 10, right: 10, top: 5, bottom: 5 },
       color: '#fff'
-    }).setOrigin(0.5);
-    const backContainer = this.add.container(70, 22, [backBox, backText])
-      .setSize(100, 36)
-      .setInteractive(new Phaser.Geom.Rectangle(-50, -18, 100, 36), Phaser.Geom.Rectangle.Contains);
-    backContainer.on('pointerdown', () => this.scene.start('Home'));
-    backContainer.on('pointerover', () => backContainer.setCursor('pointer'));
+    })
+      .setOrigin(0, 0.5)
+      .setInteractive({ useHandCursor: true })
+      .on('pointerdown', () => this.scene.start('Home'));
 
-    // 💎 Diamonds
+    // 💎 Алмазы справа
     this.add.text(width - 100, 22, '💎', {
       fontSize: '22px',
       fontFamily: 'Rajdhani'
@@ -44,14 +41,14 @@ export default class ShopScene extends Phaser.Scene {
       color: '#fff'
     }).setOrigin(0, 0.5);
 
-    // 🏷️ Title
+    // 🏷️ Заголовок
     this.add.text(centerX, 100, 'BOOSTER SHOP', {
       fontSize: '24px',
       fontFamily: 'Rajdhani',
       color: '#ffffff'
     }).setOrigin(0.5);
 
-    // 🔘 Boosters
+    // 🔘 Бустеры
     const boosters = [
       { label: 'FARM x2', desc: 'Doubles income', key: 'boosterFarm' },
       { label: 'AUTO CLICK', desc: 'Clicks every sec', key: 'boosterAuto' },
