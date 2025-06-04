@@ -18,7 +18,7 @@ export default class ShopScene extends Phaser.Scene {
       };
     }
 
-    // Назад ← (слева)
+    // 🔙 BACK
     const backBox = this.add.rectangle(70, 22, 100, 36, 0x333333, 0.8)
       .setOrigin(0.5)
       .setStrokeStyle(2, 0xffffff);
@@ -27,12 +27,13 @@ export default class ShopScene extends Phaser.Scene {
       fontFamily: 'Rajdhani',
       color: '#fff'
     }).setOrigin(0.5);
-    const backContainer = this.add.container(0, 0, [backBox, backText])
+    const backContainer = this.add.container(70, 22, [backBox, backText])
       .setSize(100, 36)
       .setInteractive(new Phaser.Geom.Rectangle(-50, -18, 100, 36), Phaser.Geom.Rectangle.Contains);
     backContainer.on('pointerdown', () => this.scene.start('Home'));
+    backContainer.on('pointerover', () => backContainer.setCursor('pointer'));
 
-    // Алмазы 💎 (справа)
+    // 💎 Diamonds
     this.add.text(width - 100, 22, '💎', {
       fontSize: '22px',
       fontFamily: 'Rajdhani'
@@ -43,14 +44,14 @@ export default class ShopScene extends Phaser.Scene {
       color: '#fff'
     }).setOrigin(0, 0.5);
 
-    // Заголовок BOOSTER SHOP
-    this.add.text(centerX, 80, 'BOOSTER SHOP', {
+    // 🏷️ Title
+    this.add.text(centerX, 100, 'BOOSTER SHOP', {
       fontSize: '24px',
       fontFamily: 'Rajdhani',
       color: '#ffffff'
     }).setOrigin(0.5);
 
-    // Бустеры
+    // 🔘 Boosters
     const boosters = [
       { label: 'FARM x2', desc: 'Doubles income', key: 'boosterFarm' },
       { label: 'AUTO CLICK', desc: 'Clicks every sec', key: 'boosterAuto' },
@@ -62,7 +63,7 @@ export default class ShopScene extends Phaser.Scene {
     const buttonWidth = 260;
     const buttonHeight = 80;
     const spacingY = 24;
-    const startY = 140;
+    const startY = 160;
 
     boosters.forEach((booster, i) => {
       const x = centerX;
@@ -78,7 +79,7 @@ export default class ShopScene extends Phaser.Scene {
       frame.lineStyle(2, 0xffffff);
       frame.strokeRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 14);
 
-      const labelWithPrice = this.add.text(0, -16, `${booster.label}    💎100`, {
+      const labelWithPrice = this.add.text(0, -14, `${booster.label}    💎 100`, {
         fontSize: '20px',
         fontFamily: 'Rajdhani',
         color: '#ffffff'
@@ -93,6 +94,8 @@ export default class ShopScene extends Phaser.Scene {
       const container = this.add.container(x, y, [bg, frame, labelWithPrice, desc])
         .setSize(buttonWidth, buttonHeight)
         .setInteractive(new Phaser.Geom.Rectangle(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight), Phaser.Geom.Rectangle.Contains);
+
+      container.on('pointerover', () => container.setCursor('pointer'));
 
       container.on('pointerdown', () => {
         if (window.boosters[booster.key]) return;
