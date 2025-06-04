@@ -18,22 +18,11 @@ export default class ShopScene extends Phaser.Scene {
       };
     }
 
-    // 💎 Алмазы слева
-    this.add.text(30, 22, '💎', {
-      fontSize: '22px',
-      fontFamily: 'Rajdhani'
-    }).setOrigin(0.5);
-    this.diamondText = this.add.text(60, 22, `${window.diamonds}`, {
-      fontSize: '22px',
-      fontFamily: 'Rajdhani',
-      color: '#fff'
-    }).setOrigin(0, 0.5);
-
-    // 🔙 Назад справа
-    const backBox = this.add.rectangle(width - 70, 22, 100, 36, 0x333333, 0.8)
+    // 🔙 Назад слева
+    const backBox = this.add.rectangle(70, 22, 100, 36, 0x333333, 0.8)
       .setOrigin(0.5)
       .setStrokeStyle(2, 0xffffff);
-    const backText = this.add.text(width - 70, 22, '← BACK', {
+    const backText = this.add.text(70, 22, '← BACK', {
       fontSize: '18px',
       fontFamily: 'Rajdhani',
       color: '#fff'
@@ -43,9 +32,20 @@ export default class ShopScene extends Phaser.Scene {
       .setInteractive()
       .on('pointerdown', () => this.scene.start('Home'));
 
+    // 💎 Алмазы справа
+    this.add.text(width - 100, 22, '💎', {
+      fontSize: '22px',
+      fontFamily: 'Rajdhani'
+    }).setOrigin(0.5);
+    this.diamondText = this.add.text(width - 70, 22, `${window.diamonds}`, {
+      fontSize: '22px',
+      fontFamily: 'Rajdhani',
+      color: '#fff'
+    }).setOrigin(0, 0.5);
+
     // 🏷️ Заголовок
     this.add.text(centerX, 100, 'BOOSTER SHOP', {
-      fontSize: '30px',
+      fontSize: '26px',
       fontFamily: 'Rajdhani',
       color: '#ffffff'
     }).setOrigin(0.5);
@@ -60,9 +60,9 @@ export default class ShopScene extends Phaser.Scene {
     ];
 
     const buttonWidth = 260;
-    const buttonHeight = 90;
-    const spacingY = 28;
-    const startY = 170;
+    const buttonHeight = 80;
+    const spacingY = 24;
+    const startY = 160;
 
     boosters.forEach((booster, i) => {
       const x = centerX;
@@ -78,14 +78,14 @@ export default class ShopScene extends Phaser.Scene {
       frame.lineStyle(2, 0xffffff);
       frame.strokeRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 14);
 
-      const labelWithPrice = this.add.text(0, -18, `${booster.label}    💎 100`, {
-        fontSize: '20px',
+      const labelWithPrice = this.add.text(0, -14, `${booster.label}    💎 100`, {
+        fontSize: '18px',
         fontFamily: 'Rajdhani',
         color: '#ffffff'
       }).setOrigin(0.5);
 
-      const desc = this.add.text(0, 16, booster.desc, {
-        fontSize: '16px',
+      const desc = this.add.text(0, 14, booster.desc, {
+        fontSize: '14px',
         fontFamily: 'Rajdhani',
         color: '#dddddd'
       }).setOrigin(0.5);
@@ -102,12 +102,10 @@ export default class ShopScene extends Phaser.Scene {
           window.boosters[booster.key] = true;
           this.diamondText.setText(`${window.diamonds}`);
 
-          // перекрасить
           bg.clear();
           bg.fillStyle(0x228B22, 1);
           bg.fillRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 14);
 
-          // анимация
           this.tweens.add({
             targets: container,
             scaleX: 1.05,
