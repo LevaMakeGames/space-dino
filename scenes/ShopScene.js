@@ -5,9 +5,7 @@ export default class ShopScene extends Phaser.Scene {
 
   create() {
     const { centerX, width } = this.cameras.main;
-
     if (!window.diamonds) window.diamonds = 300;
-
     if (!window.boosters) {
       window.boosters = {
         boosterFarm: false,
@@ -18,19 +16,22 @@ export default class ShopScene extends Phaser.Scene {
       };
     }
 
-    // 🔙 BACK (без контейнера)
-    this.add.text(20, 22, '← BACK', {
+    // BACK
+    const backBox = this.add.rectangle(70, 22, 100, 36, 0x333333, 0.8)
+      .setOrigin(0.5)
+      .setStrokeStyle(2, 0xffffff);
+    const backText = this.add.text(70, 22, '← BACK', {
       fontSize: '18px',
       fontFamily: 'Rajdhani',
-      backgroundColor: '#333333',
-      padding: { left: 10, right: 10, top: 5, bottom: 5 },
       color: '#fff'
-    })
-      .setOrigin(0, 0.5)
-      .setInteractive({ useHandCursor: true })
-      .on('pointerdown', () => this.scene.start('Home'));
+    }).setOrigin(0.5);
+    const backContainer = this.add.container(0, 0, [backBox, backText])
+      .setSize(100, 36)
+      .setInteractive(new Phaser.Geom.Rectangle(-50, -18, 100, 36), Phaser.Geom.Rectangle.Contains);
+    backContainer.on('pointerdown', () => this.scene.start('Home'));
+    backContainer.on('pointerover', () => backContainer.setCursor('pointer'));
 
-    // 💎 Алмазы справа
+    // Diamonds
     this.add.text(width - 100, 22, '💎', {
       fontSize: '22px',
       fontFamily: 'Rajdhani'
@@ -41,14 +42,13 @@ export default class ShopScene extends Phaser.Scene {
       color: '#fff'
     }).setOrigin(0, 0.5);
 
-    // 🏷️ Заголовок
-    this.add.text(centerX, 100, 'BOOSTER SHOP', {
-      fontSize: '24px',
+    // Title
+    this.add.text(centerX, 90, 'BOOSTER SHOP', {
+      fontSize: '26px',
       fontFamily: 'Rajdhani',
       color: '#ffffff'
     }).setOrigin(0.5);
 
-    // 🔘 Бустеры
     const boosters = [
       { label: 'FARM x2', desc: 'Doubles income', key: 'boosterFarm' },
       { label: 'AUTO CLICK', desc: 'Clicks every sec', key: 'boosterAuto' },
@@ -71,30 +71,28 @@ export default class ShopScene extends Phaser.Scene {
       const bg = this.add.graphics();
       bg.fillStyle(color, 1);
       bg.fillRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 14);
+      bg.setInteractive(new Phaser.Geom.Rectangle(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight), Phaser.Geom.Rectangle.Contains);
+      bg.on('pointerover', () => bg.setCursor('pointer'));
 
       const frame = this.add.graphics();
       frame.lineStyle(2, 0xffffff);
       frame.strokeRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 14);
 
       const labelWithPrice = this.add.text(0, -14, `${booster.label}    💎 100`, {
-        fontSize: '20px',
+        fontSize: '18px',
         fontFamily: 'Rajdhani',
         color: '#ffffff'
       }).setOrigin(0.5);
 
-      const desc = this.add.text(0, 16, booster.desc, {
-        fontSize: '18px',
+      const desc = this.add.text(0, 14, booster.desc, {
+        fontSize: '16px',
         fontFamily: 'Rajdhani',
         color: '#dddddd'
       }).setOrigin(0.5);
 
-      const container = this.add.container(x, y, [bg, frame, labelWithPrice, desc])
-        .setSize(buttonWidth, buttonHeight)
-        .setInteractive(new Phaser.Geom.Rectangle(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight), Phaser.Geom.Rectangle.Contains);
+      this.add.container(x, y, [bg, frame, labelWithPrice, desc]);
 
-      container.on('pointerover', () => container.setCursor('pointer'));
-
-      container.on('pointerdown', () => {
+      bg.on('pointerdown', () => {
         if (window.boosters[booster.key]) return;
 
         if (window.diamonds >= 100) {
@@ -107,7 +105,7 @@ export default class ShopScene extends Phaser.Scene {
           bg.fillRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 14);
 
           this.tweens.add({
-            targets: container,
+            targets: bg,
             scaleX: 1.05,
             scaleY: 1.05,
             yoyo: true,
@@ -115,12 +113,12 @@ export default class ShopScene extends Phaser.Scene {
           });
         } else {
           this.tweens.add({
-            targets: container,
+            targets: bg,
             x: x - 10,
             yoyo: true,
             duration: 60,
             repeat: 3,
-            onComplete: () => container.setX(x)
+            onComplete: () => bg.setX(x)
           });
 
           const warn = this.add.text(x, y + 50, 'Not enough diamonds', {
