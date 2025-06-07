@@ -124,7 +124,7 @@ export default class HomeScene extends Phaser.Scene {
       window.boosters[key] ? `b_${i + 1}` : 'b_0'
     );
 
-    const spriteSize = 80;
+    const spriteSize = 100;
     const spacing = 30;
     const topOffset = height * 0.2;
 
