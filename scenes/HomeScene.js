@@ -108,7 +108,7 @@ export default class HomeScene extends Phaser.Scene {
       counter.setText(`Coins: ${coins}`);
     });
 
-    // 📦 Спрайты бустеров (3 сверху, 2 снизу)
+    // Спрайты бустеров
     const boosterKeys = [
       'boosterFarm',
       'boosterAuto',
@@ -123,21 +123,21 @@ export default class HomeScene extends Phaser.Scene {
 
     const spriteSize = 100;
     const spacing = 30;
-    const topOffset = height * 0.2;
+    const topOffset = height * 0.2 - 20; // поднято ещё на 10
 
     const positions = [
-      { x: centerX - spriteSize - spacing, y: topOffset - 10 },
-      { x: centerX, y: topOffset - 10 },
-      { x: centerX + spriteSize + spacing, y: topOffset - 10 },
-      { x: centerX - spriteSize / 2 - spacing / 2, y: topOffset + spriteSize + spacing - 10 },
-      { x: centerX + spriteSize / 2 + spacing / 2, y: topOffset + spriteSize + spacing - 10 }
+      { x: centerX - spriteSize - spacing, y: topOffset },
+      { x: centerX,                        y: topOffset },
+      { x: centerX + spriteSize + spacing, y: topOffset },
+      { x: centerX - spriteSize / 2 - spacing / 2, y: topOffset + spriteSize + spacing },
+      { x: centerX + spriteSize / 2 + spacing / 2, y: topOffset + spriteSize + spacing }
     ];
 
     icons.forEach((iconKey, i) => {
       this.add.image(positions[i].x, positions[i].y, iconKey)
         .setDisplaySize(spriteSize, spriteSize)
         .setOrigin(0.5)
-        .setDepth(2);
+        .setDepth(0.5); // ниже динозавра
     });
 
     this.addNavigation();
