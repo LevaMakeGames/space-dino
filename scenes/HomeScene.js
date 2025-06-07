@@ -36,8 +36,7 @@ export default class HomeScene extends Phaser.Scene {
     const scaleX = width / bg.width;
     const scaleY = height / bg.height;
     const scale = Math.max(scaleX, scaleY);
-    bg.setScale(scale);
-    bg.setDepth(0);
+    bg.setScale(scale).setDepth(0);
 
     // Счётчик монет
     let coins = 0;
@@ -57,9 +56,7 @@ export default class HomeScene extends Phaser.Scene {
       loop: true,
       callback: () => {
         dino.setTexture('dino_closed');
-        this.time.delayedCall(150, () => {
-          dino.setTexture('dino_open');
-        });
+        this.time.delayedCall(150, () => dino.setTexture('dino_open'));
       }
     });
 
@@ -111,7 +108,7 @@ export default class HomeScene extends Phaser.Scene {
       counter.setText(`Coins: ${coins}`);
     });
 
-    // Спрайты бустеров: 3 сверху, 2 снизу
+    // 📦 Спрайты бустеров (3 сверху, 2 снизу)
     const boosterKeys = [
       'boosterFarm',
       'boosterAuto',
@@ -129,11 +126,11 @@ export default class HomeScene extends Phaser.Scene {
     const topOffset = height * 0.2;
 
     const positions = [
-      { x: centerX - spriteSize - spacing, y: topOffset },
-      { x: centerX,                       y: topOffset },
-      { x: centerX + spriteSize + spacing, y: topOffset },
-      { x: centerX - spriteSize / 2 - spacing / 2, y: topOffset + spriteSize + spacing },
-      { x: centerX + spriteSize / 2 + spacing / 2, y: topOffset + spriteSize + spacing }
+      { x: centerX - spriteSize - spacing, y: topOffset - 10 },
+      { x: centerX, y: topOffset - 10 },
+      { x: centerX + spriteSize + spacing, y: topOffset - 10 },
+      { x: centerX - spriteSize / 2 - spacing / 2, y: topOffset + spriteSize + spacing - 10 },
+      { x: centerX + spriteSize / 2 + spacing / 2, y: topOffset + spriteSize + spacing - 10 }
     ];
 
     icons.forEach((iconKey, i) => {
