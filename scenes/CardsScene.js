@@ -4,10 +4,8 @@ export default class CardsScene extends Phaser.Scene {
   }
 
   preload() {
-    // Загрузка изображений карточек (предполагается, что у тебя они есть по этому пути)
-    for (let i = 0; i < 12; i++) {
-      this.load.image(`card_${i}`, `https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/cards/card_${i}.png`);
-    }
+    // Загружаем одно изображение для всех карточек
+    this.load.image('card_fire', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/card_fire.png');
   }
 
   create() {
@@ -54,8 +52,8 @@ export default class CardsScene extends Phaser.Scene {
       const x = startX + col * (cardWidth + spacing);
       const y = startY + row * (cardHeight + spacing);
 
-      // Карточка как изображение
-      const cardImg = this.add.image(x + cardWidth / 2, y + cardHeight / 2, key)
+      // Одна и та же картинка
+      const cardImg = this.add.image(x + cardWidth / 2, y + cardHeight / 2, 'card_fire')
         .setDisplaySize(cardWidth, cardHeight)
         .setInteractive();
 
@@ -75,12 +73,12 @@ export default class CardsScene extends Phaser.Scene {
         padding: { left: 4, right: 4, top: 2, bottom: 2 }
       }).setOrigin(0.5);
 
-      // Обработка покупки
+      // Покупка
       cardImg.on('pointerdown', () => {
         if (window.coins >= card.cost) {
           card.count++;
           window.coins -= card.cost;
-          this.scene.restart(); // перерисовать сцену
+          this.scene.restart(); // Обновляем сцену
         }
       });
     });
