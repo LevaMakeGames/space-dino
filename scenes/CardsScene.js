@@ -38,42 +38,54 @@ export default class CardsScene extends Phaser.Scene {
       color: '#fff'
     }).setOrigin(1, 0);
 
-    // Отображение 12 карт
+    // Получаем размеры оригинального изображения
+    const texture = this.textures.get('card_fire');
+    const sourceImg = texture.getSourceImage();
+    const originalWidth = sourceImg.width;
+    const originalHeight = sourceImg.height;
+
+    // Размер, в который вписываем по ширине
+    const targetWidth = 100;
+    const scale = targetWidth / originalWidth;
+    const scaledWidth = originalWidth * scale;
+    const scaledHeight = originalHeight * scale;
+
+    // Сетка
     const cols = 3;
-    const cardWidth = 100;
-    const cardHeight = 120;
     const spacing = 20;
-    const startX = centerX - (cols * (cardWidth + spacing) - spacing) / 2;
+    const startX = centerX - (cols * (scaledWidth + spacing) - spacing) / 2;
     const startY = 80;
 
     Object.entries(window.cardInventory).forEach(([key, card], i) => {
       const col = i % cols;
       const row = Math.floor(i / cols);
-      const x = startX + col * (cardWidth + spacing);
-      const y = startY + row * (cardHeight + spacing);
+      const x = startX + col * (scaledWidth + spacing);
+      const y = startY + row * (scaledHeight + spacing);
+      const xPos = x + scaledWidth / 2;
+      const yPos = y + scaledHeight / 2;
 
-      // Добавляем изображение карточки с сохранением пропорций
-      const cardImg = this.add.image(x + cardWidth / 2, y + cardHeight / 2, 'card_fire')
-        .setScale(0.45) // Сохраняет форму. Настрой под себя.
+      // Карта
+      const cardImg = this.add.image(xPos, yPos, 'card_fire')
+        .setScale(scale)
         .setInteractive();
 
-      // Количество карты
-      this.add.text(x + cardWidth / 2, y + 6, `x${card.count}`, {
+      // Кол-во
+      this.add.text(xPos, y + 6, `x${card.count}`, {
         fontSize: '14px',
         color: '#fff',
         backgroundColor: 'rgba(0, 0, 0, 0.4)',
         padding: { left: 4, right: 4, top: 2, bottom: 2 }
       }).setOrigin(0.5);
 
-      // Стоимость карты
-      this.add.text(x + cardWidth / 2, y + cardHeight - 10, `${card.cost} $`, {
+      // Стоимость
+      this.add.text(xPos, y + scaledHeight - 10, `${card.cost} $`, {
         fontSize: '14px',
         color: '#fff',
         backgroundColor: 'rgba(0, 0, 0, 0.4)',
         padding: { left: 4, right: 4, top: 2, bottom: 2 }
       }).setOrigin(0.5);
 
-      // Обработка покупки
+      // Покупка
       cardImg.on('pointerdown', () => {
         if (window.coins >= card.cost) {
           card.count++;
