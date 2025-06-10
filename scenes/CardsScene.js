@@ -3,6 +3,13 @@ export default class CardsScene extends Phaser.Scene {
     super('Cards');
   }
 
+  preload() {
+    // Загрузка изображений карточек (предполагается, что у тебя они есть по этому пути)
+    for (let i = 0; i < 12; i++) {
+      this.load.image(`card_${i}`, `https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/cards/card_${i}.png`);
+    }
+  }
+
   create() {
     // Инициализация монет и карт
     if (window.coins == null) window.coins = 200;
@@ -47,24 +54,29 @@ export default class CardsScene extends Phaser.Scene {
       const x = startX + col * (cardWidth + spacing);
       const y = startY + row * (cardHeight + spacing);
 
-      // Карточка (прямоугольник)
-      const bgColor = window.coins >= card.cost ? 0x4444aa : 0x222222;
-      const cardBg = this.add.rectangle(x, y, cardWidth, cardHeight, bgColor).setOrigin(0, 0).setInteractive();
+      // Карточка как изображение
+      const cardImg = this.add.image(x + cardWidth / 2, y + cardHeight / 2, key)
+        .setDisplaySize(cardWidth, cardHeight)
+        .setInteractive();
 
       // Количество
-      this.add.text(x + cardWidth / 2, y + 20, `x${card.count}`, {
-        fontSize: '16px',
-        color: '#fff'
+      this.add.text(x + cardWidth / 2, y + 10, `x${card.count}`, {
+        fontSize: '14px',
+        color: '#fff',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        padding: { left: 4, right: 4, top: 2, bottom: 2 }
       }).setOrigin(0.5);
 
       // Стоимость
-      this.add.text(x + cardWidth / 2, y + cardHeight - 20, `${card.cost} $`, {
-        fontSize: '16px',
-        color: '#fff'
+      this.add.text(x + cardWidth / 2, y + cardHeight - 10, `${card.cost} $`, {
+        fontSize: '14px',
+        color: '#fff',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        padding: { left: 4, right: 4, top: 2, bottom: 2 }
       }).setOrigin(0.5);
 
-      // Обработчик покупки
-      cardBg.on('pointerdown', () => {
+      // Обработка покупки
+      cardImg.on('pointerdown', () => {
         if (window.coins >= card.cost) {
           card.count++;
           window.coins -= card.cost;
@@ -74,4 +86,3 @@ export default class CardsScene extends Phaser.Scene {
     });
   }
 }
-
