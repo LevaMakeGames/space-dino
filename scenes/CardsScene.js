@@ -4,7 +4,7 @@ export default class CardsScene extends Phaser.Scene {
   }
 
   preload() {
-    // Загружаем одно изображение для всех карточек
+    // Загружаем одну картинку для всех карточек
     this.load.image('card_fire', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/card_fire.png');
   }
 
@@ -52,33 +52,33 @@ export default class CardsScene extends Phaser.Scene {
       const x = startX + col * (cardWidth + spacing);
       const y = startY + row * (cardHeight + spacing);
 
-      // Одна и та же картинка
+      // Добавляем изображение карточки с сохранением пропорций
       const cardImg = this.add.image(x + cardWidth / 2, y + cardHeight / 2, 'card_fire')
-        .setDisplaySize(cardWidth, cardHeight)
+        .setScale(0.45) // Сохраняет форму. Настрой под себя.
         .setInteractive();
 
-      // Количество
-      this.add.text(x + cardWidth / 2, y + 10, `x${card.count}`, {
+      // Количество карты
+      this.add.text(x + cardWidth / 2, y + 6, `x${card.count}`, {
         fontSize: '14px',
         color: '#fff',
-        backgroundColor: 'rgba(0,0,0,0.5)',
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
         padding: { left: 4, right: 4, top: 2, bottom: 2 }
       }).setOrigin(0.5);
 
-      // Стоимость
+      // Стоимость карты
       this.add.text(x + cardWidth / 2, y + cardHeight - 10, `${card.cost} $`, {
         fontSize: '14px',
         color: '#fff',
-        backgroundColor: 'rgba(0,0,0,0.5)',
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
         padding: { left: 4, right: 4, top: 2, bottom: 2 }
       }).setOrigin(0.5);
 
-      // Покупка
+      // Обработка покупки
       cardImg.on('pointerdown', () => {
         if (window.coins >= card.cost) {
           card.count++;
           window.coins -= card.cost;
-          this.scene.restart(); // Обновляем сцену
+          this.scene.restart();
         }
       });
     });
