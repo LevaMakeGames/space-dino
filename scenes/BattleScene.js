@@ -10,7 +10,7 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   create() {
-    if (window.coins == null) window.coins = 200;
+    if (window.coins == null) window.coins = 500; // теперь по умолчанию 500 монет
 
     this.cardData = [
       { id: 1, element: 'fire', name: 'Flame Horn' },
@@ -22,13 +22,14 @@ export default class BattleScene extends Phaser.Scene {
       { id: 7, element: 'earth', name: 'Clay Core', special: 'win_vs_earth' },
       { id: 8, element: 'air', name: 'Storm Slice', special: 'win_vs_water' },
       { id: 9, element: 'secret', name: 'Secret Card', special: 'secret_power' }
-    ].map(c => ({ ...c, price: 50 + c.id * 10, count: 0 }));
+    ].map(c => ({ ...c, price: 50 + c.id * 10 }));
 
     this.selectedCards = [];
     this.roundResults = [];
 
     const { centerX, width, height } = this.cameras.main;
 
+    // BACK
     this.add.text(20, 20, '← BACK', {
       fontSize: '20px',
       backgroundColor: '#444',
@@ -36,18 +37,21 @@ export default class BattleScene extends Phaser.Scene {
       color: '#fff'
     }).setInteractive().on('pointerdown', () => this.scene.start('Home'));
 
+    // Coins
     this.coinsText = this.add.text(width - 20, 20, `Coins: ${window.coins}`, {
       fontSize: '20px',
       color: '#fff'
     }).setOrigin(1, 0);
 
-    this.add.text(centerX, 60, 'Choose your cards', {
+    // Заголовок (опущен на 10px вниз)
+    this.add.text(centerX, 70, 'Choose your cards', {
       fontSize: '28px',
       color: '#ffffff'
     }).setOrigin(0.5);
 
     this.createCardGrid();
 
+    // Индикатор выбора
     this.statusText = this.add.text(centerX, height - 30, 'Selected: 0 / 3', {
       fontSize: '24px',
       color: '#00ff00'
@@ -57,11 +61,11 @@ export default class BattleScene extends Phaser.Scene {
   createCardGrid() {
     const cols = 3;
     const spacing = 20;
-    const size = 100;
+    const size = 105; // Увеличено на 5px
     const scale = size / 256;
     const centerX = this.cameras.main.centerX;
     const startX = centerX - (cols * (size + spacing) - spacing) / 2;
-    const startY = 90;
+    const startY = 100; // Опущено на 10px вниз
 
     this.cardData.forEach((card, i) => {
       const col = i % cols;
@@ -75,14 +79,7 @@ export default class BattleScene extends Phaser.Scene {
         .setScale(scale)
         .setInteractive();
 
-      const countText = this.add.text(xPos, y + 6, `x${card.count}`, {
-        fontSize: '14px',
-        color: '#fff',
-        backgroundColor: 'rgba(0, 0, 0, 0.4)',
-        padding: { left: 4, right: 4, top: 2, bottom: 2 }
-      }).setOrigin(0.5);
-
-      const priceText = this.add.text(xPos, y + size - 10, `${card.price} $`, {
+      const priceText = this.add.text(xPos, y + size + 8, `${card.price} $`, {
         fontSize: '14px',
         color: '#fff',
         backgroundColor: 'rgba(0, 0, 0, 0.4)',
@@ -97,14 +94,29 @@ export default class BattleScene extends Phaser.Scene {
     if (this.selectedCards.length >= 3 || this.selectedCards.includes(card)) return;
 
     if (window.coins < card.price) {
+      this.tweens.add({ // вибрация при нехватке
+        targets: img,
+        x: img.x + 5,
+        duration: 50,
+        yoyo: true,
+        repeat: 2,
+        onComplete: () => img.x -= 5
+      });
       label.setColor('#ff4444');
       return;
     }
 
     window.coins -= card.price;
     this.coinsText.setText(`Coins: ${window.coins}`);
-    img.setTint(0x00ff00);
     label.setColor('#00ff00');
+
+    this.tweens.add({ // вибрация при покупке
+      targets: img,
+      scaleX: img.scaleX * 1.1,
+      scaleY: img.scaleY * 1.1,
+      duration: 100,
+      yoyo: true
+    });
 
     this.selectedCards.push(card);
     this.statusText.setText(`Selected: ${this.selectedCards.length} / 3`);
@@ -115,6 +127,6 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   startBattle() {
-    this.scene.start('Home'); // заменишь на свою боевую сцену позже
+    this.scene.start('Home'); // временный переход
   }
 }
