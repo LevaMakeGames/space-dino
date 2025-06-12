@@ -3,127 +3,111 @@ export default class BattleScene extends Phaser.Scene {
     super('Battle');
   }
 
+  preload() {
+    for (let i = 1; i <= 9; i++) {
+      this.load.image(`card_${i}`, `https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/card_${i}.png`);
+    }
+  }
+
   create() {
-    this.availableCards = ['fire', 'water', 'earth', 'air'];
+    this.cardData = [
+      { id: 1, element: 'fire', name: 'Flame Horn' },
+      { id: 2, element: 'water', name: 'Ice Fang' },
+      { id: 3, element: 'earth', name: 'Stone Spike' },
+      { id: 4, element: 'air', name: 'Wind Dash' },
+      { id: 5, element: 'fire', name: 'Ash Burst', special: 'vs_earth_20' },
+      { id: 6, element: 'water', name: 'Calm Water', special: 'draw_air' },
+      { id: 7, element: 'earth', name: 'Clay Core', special: 'win_vs_earth' },
+      { id: 8, element: 'air', name: 'Storm Slice', special: 'win_vs_water' },
+      { id: 9, element: 'secret', name: 'Secret Card', special: 'secret_power' }
+    ];
+
     this.selectedCards = [];
     this.enemyCards = [];
     this.roundResults = [];
-    this.currentRound = 0;
 
     this.createCardSelection();
   }
 
   createCardSelection() {
-    const spacing = 140;
-    const startX = this.cameras.main.centerX - (this.availableCards.length - 1) * spacing / 2;
-    const y = 150;
+    const cols = 3;
+    const cardWidth = 100;
+    const cardHeight = 140;
+    const spacing = 20;
+    const centerX = this.cameras.main.centerX;
+    const startX = centerX - (cols * (cardWidth + spacing) - spacing) / 2;
+    const startY = 100;
 
-    this.cardButtons = [];
+    this.cardData.forEach((card, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const x = startX + col * (cardWidth + spacing);
+      const y = startY + row * (cardHeight + spacing);
 
-    this.availableCards.forEach((element, i) => {
-      const x = startX + i * spacing;
-      const rect = this.add.rectangle(x, y, 100, 140, 0x444444).setStrokeStyle(2, 0xffffff).setInteractive();
-      const label = this.add.text(x, y, element.toUpperCase(), {
-        fontSize: '20px',
-        color: '#ffffff'
-      }).setOrigin(0.5);
+      const img = this.add.image(x + cardWidth / 2, y + cardHeight / 2, `card_${card.id}`)
+        .setDisplaySize(cardWidth, cardHeight)
+        .setInteractive();
 
-      rect.on('pointerdown', () => this.selectCard(element, rect));
-
-      this.cardButtons.push({ element, rect });
+      img.on('pointerdown', () => this.selectCard(card, img));
     });
 
-    this.statusText = this.add.text(this.cameras.main.centerX, 300, 'Выберите 3 карты', {
+    this.statusText = this.add.text(centerX, 450, 'Selected: 0 / 3', {
       fontSize: '24px',
-      color: '#ffffff'
+      color: '#00ff00'
     }).setOrigin(0.5);
   }
 
-  selectCard(element, rect) {
-    if (this.selectedCards.length >= 3 || this.selectedCards.includes(element)) return;
+  selectCard(card, img) {
+    if (this.selectedCards.length >= 3 || this.selectedCards.includes(card)) return;
 
-    rect.setFillStyle(0x00aa00);
-    this.selectedCards.push(element);
+    this.selectedCards.push(card);
+    img.setTint(0x00ff00);
+    this.statusText.setText(`Selected: ${this.selectedCards.length} / 3`);
 
     if (this.selectedCards.length === 3) {
-      this.statusText.setText('Бой начинается...');
       this.time.delayedCall(1000, () => this.startBattle());
     }
   }
 
   startBattle() {
-    // Подбираем вражеские карты (2 слабых, 1 сильная)
-    const getWeak = el => ({
-      fire: 'earth',
-      water: 'fire',
-      earth: 'water',
-      air: 'air'
-    })[el];
+    this.children.removeAll();
+    this.enemyCards = this.generateEnemyCards();
 
-    const getStrong = el => ({
-      fire: 'water',
-      water: 'earth',
-      earth: 'fire',
-      air: 'air'
-    })[el];
+    for (let i = 0; i < 3; i++) {
+      this.runRound(i);
+    }
 
-    this.enemyCards = [
-      getWeak(this.selectedCards[0]),
-      getWeak(this.selectedCards[1]),
-      getStrong(this.selectedCards[2])
-    ];
-
-    this.clearScene();
-    this.runRound(0);
-    this.time.delayedCall(2000, () => this.runRound(1));
-    this.time.delayedCall(4000, () => this.runRound(2));
-    this.time.delayedCall(6000, () => this.showResult());
+    this.time.delayedCall(3500, () => this.showResult());
   }
 
-  clearScene() {
-    this.cardButtons.forEach(btn => {
-      btn.rect.destroy();
+  generateEnemyCards() {
+    return this.selectedCards.map(card => {
+      const pool = this.cardData.filter(c => c.id !== card.id);
+      return Phaser.Utils.Array.GetRandom(pool);
     });
-    this.statusText.setText('');
   }
 
   runRound(index) {
     const player = this.selectedCards[index];
     const enemy = this.enemyCards[index];
+    const result = this.getBattleResult(player, enemy);
+    this.roundResults.push(result);
 
     const centerX = this.cameras.main.centerX;
     const spacing = 160;
-    const startX = centerX - spacing;
-
-    const x = startX + index * spacing;
+    const x = centerX - spacing + index * spacing;
     const yPlayer = this.cameras.main.centerY + 100;
     const yEnemy = this.cameras.main.centerY - 100;
 
     const rectPlayer = this.add.rectangle(x, yPlayer, 100, 140, 0x222222).setStrokeStyle(2, 0xffffff);
-    const labelPlayer = this.add.text(x, yPlayer, player.toUpperCase(), { fontSize: '20px', color: '#ffffff' }).setOrigin(0.5);
-
     const rectEnemy = this.add.rectangle(x, yEnemy, 100, 140, 0x444444).setStrokeStyle(2, 0xffffff);
-    const labelEnemy = this.add.text(x, yEnemy, enemy.toUpperCase(), { fontSize: '20px', color: '#ffffff' }).setOrigin(0.5);
 
-    const result = this.getResult(player, enemy);
-    this.roundResults.push(result);
+    const symbol = { win: '✔', lose: '❌', draw: '=' }[result];
+    const color = { win: 0x00ff00, lose: 0xff0000, draw: 0xaaaaaa }[result];
 
-    const symbol = {
-      win: '✔',
-      lose: '❌',
-      draw: '='
-    }[result];
-
-    this.time.delayedCall(1000, () => {
-      const color = {
-        win: 0x00ff00,
-        lose: 0xff0000,
-        draw: 0xaaaaaa
-      }[result];
-
+    this.time.delayedCall(500 + index * 500, () => {
       rectPlayer.setStrokeStyle(4, color);
       rectEnemy.setStrokeStyle(4, color);
-
       this.add.text(x, this.cameras.main.centerY, symbol, {
         fontSize: '32px',
         color: '#ffffff'
@@ -131,29 +115,46 @@ export default class BattleScene extends Phaser.Scene {
     });
   }
 
-  getResult(player, enemy) {
-    if (player === enemy) return 'draw';
-    if (
-      (player === 'fire' && enemy === 'earth') ||
-      (player === 'earth' && enemy === 'water') ||
-      (player === 'water' && enemy === 'fire')
-    ) return 'win';
-    return 'lose';
+  getBattleResult(player, enemy) {
+    if (player.special === 'secret_power' && enemy.special === 'secret_power') return 'draw';
+    if (player.special === 'secret_power') return Math.random() < 0.6 ? 'win' : 'lose';
+
+    if (player.special === 'vs_earth_20' && enemy.element === 'earth') return Math.random() < 0.7 ? 'win' : 'lose';
+    if (player.special === 'draw_air' && enemy.element === 'air') return 'draw';
+    if (player.special === 'win_vs_earth' && enemy.element === 'earth' && player.id !== enemy.id) return 'win';
+    if (player.special === 'win_vs_water' && enemy.element === 'water') return 'win';
+
+    if (player.element === enemy.element) return 'draw';
+
+    const winsAgainst = {
+      water: 'fire',
+      fire: 'air',
+      air: 'earth',
+      earth: 'water'
+    };
+
+    if (winsAgainst[player.element] === enemy.element) return 'win';
+    if (winsAgainst[enemy.element] === player.element) return 'lose';
+
+    return Math.random() < 0.5 ? 'win' : 'lose';
   }
 
   showResult() {
     const wins = this.roundResults.filter(r => r === 'win').length;
-    const text = wins >= 2 ? 'Победа!' : 'Поражение';
+    const resultText = wins >= 2 ? 'Победа!' : 'Поражение';
 
-    this.statusText.setText(text);
+    this.statusText = this.add.text(this.cameras.main.centerX, this.scale.height - 100, resultText, {
+      fontSize: '32px',
+      color: '#ffffff'
+    }).setOrigin(0.5);
 
-    const btn = this.add.text(this.cameras.main.centerX, this.scale.height - 80, 'Выйти', {
+    const exitBtn = this.add.text(this.cameras.main.centerX, this.scale.height - 50, 'Выйти', {
       fontSize: '24px',
-      backgroundColor: '#555',
+      backgroundColor: '#444',
       color: '#fff',
       padding: 10
-    }).setOrigin(0.5).setInteractive().setDepth(2);
+    }).setOrigin(0.5).setInteractive();
 
-    btn.on('pointerdown', () => this.scene.start('Home'));
+    exitBtn.on('pointerdown', () => this.scene.start('Home'));
   }
 }
