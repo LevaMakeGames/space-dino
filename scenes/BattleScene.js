@@ -22,28 +22,36 @@ export default class BattleScene extends Phaser.Scene {
       { id: 7, element: 'earth', name: 'Clay Core', special: 'win_vs_earth' },
       { id: 8, element: 'air', name: 'Storm Slice', special: 'win_vs_water' },
       { id: 9, element: 'secret', name: 'Secret Card', special: 'secret_power' }
-    ].map(c => ({ ...c, price: 50 + c.id * 10 }));
+    ].map(c => ({ ...c, price: 50 + c.id * 10, count: 0 }));
 
     this.selectedCards = [];
     this.roundResults = [];
 
-    this.add.text(this.cameras.main.centerX, 20, 'Choose your cards', {
+    const { centerX, width, height } = this.cameras.main;
+
+    this.add.text(20, 20, '← BACK', {
+      fontSize: '20px',
+      backgroundColor: '#444',
+      padding: { left: 10, right: 10, top: 4, bottom: 4 },
+      color: '#fff'
+    }).setInteractive().on('pointerdown', () => this.scene.start('Home'));
+
+    this.coinsText = this.add.text(width - 20, 20, `Coins: ${window.coins}`, {
+      fontSize: '20px',
+      color: '#fff'
+    }).setOrigin(1, 0);
+
+    this.add.text(centerX, 60, 'Choose your cards', {
       fontSize: '28px',
       color: '#ffffff'
     }).setOrigin(0.5);
 
-    this.coinsText = this.add.text(this.cameras.main.width - 20, 20, `Coins: ${window.coins}`, {
-      fontSize: '20px',
-      color: '#ffffff'
-    }).setOrigin(1, 0);
-
     this.createCardGrid();
 
-    this.statusText = this.add.text(this.cameras.main.centerX, this.cameras.main.height - 40,
-      'Selected: 0 / 3', {
-        fontSize: '24px',
-        color: '#00ff00'
-      }).setOrigin(0.5);
+    this.statusText = this.add.text(centerX, height - 30, 'Selected: 0 / 3', {
+      fontSize: '24px',
+      color: '#00ff00'
+    }).setOrigin(0.5);
   }
 
   createCardGrid() {
@@ -53,21 +61,32 @@ export default class BattleScene extends Phaser.Scene {
     const scale = size / 256;
     const centerX = this.cameras.main.centerX;
     const startX = centerX - (cols * (size + spacing) - spacing) / 2;
-    const startY = 80;
+    const startY = 90;
 
     this.cardData.forEach((card, i) => {
       const col = i % cols;
       const row = Math.floor(i / cols);
       const x = startX + col * (size + spacing);
       const y = startY + row * (size + spacing);
+      const xPos = x + size / 2;
+      const yPos = y + size / 2;
 
-      const img = this.add.image(x + size / 2, y + size / 2, `card_${card.id}`)
+      const img = this.add.image(xPos, yPos, `card_${card.id}`)
         .setScale(scale)
         .setInteractive();
 
-      const priceText = this.add.text(x + size / 2, y + size + 4, `${card.price} $`, {
-        fontSize: '16px',
-        color: '#ffffff'
+      const countText = this.add.text(xPos, y + 6, `x${card.count}`, {
+        fontSize: '14px',
+        color: '#fff',
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+        padding: { left: 4, right: 4, top: 2, bottom: 2 }
+      }).setOrigin(0.5);
+
+      const priceText = this.add.text(xPos, y + size - 10, `${card.price} $`, {
+        fontSize: '14px',
+        color: '#fff',
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+        padding: { left: 4, right: 4, top: 2, bottom: 2 }
       }).setOrigin(0.5);
 
       img.on('pointerdown', () => this.handlePurchase(card, img, priceText));
@@ -78,7 +97,7 @@ export default class BattleScene extends Phaser.Scene {
     if (this.selectedCards.length >= 3 || this.selectedCards.includes(card)) return;
 
     if (window.coins < card.price) {
-      label.setColor('#ff4444'); // красный — не хватает
+      label.setColor('#ff4444');
       return;
     }
 
@@ -96,7 +115,6 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   startBattle() {
-    // Здесь логика боя как раньше
-    this.scene.start('Home'); // пока выход, заменишь на свою боевую сцену
+    this.scene.start('Home'); // заменишь на свою боевую сцену позже
   }
 }
