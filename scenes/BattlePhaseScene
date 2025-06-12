@@ -1,0 +1,143 @@
+export default class BattlePhaseScene extends Phaser.Scene {
+  constructor() {
+    super('BattlePhase');
+  }
+
+  preload() {
+    for (let i = 1; i <= 9; i++) {
+      this.load.image(`card_${i}`, `assets/cards/card_${i}.png`);
+    }
+    this.load.image('bg', 'assets/bg_battle.png');
+  }
+
+  create() {
+    this.add.image(this.cameras.main.centerX, this.cameras.main.centerY, 'bg')
+      .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
+
+    this.cardData = {
+      card_1: { element: 'fire', power: 10 },
+      card_2: { element: 'water', power: 9 },
+      card_3: { element: 'earth', power: 8 },
+      card_4: { element: 'air', power: 7 },
+      card_5: { element: 'fire', power: 6 },
+      card_6: { element: 'water', power: 11 },
+      card_7: { element: 'earth', power: 12 },
+      card_8: { element: 'air', power: 5 },
+      card_9: { element: 'fire', power: 7 }
+    };
+
+    this.playerCards = window.selectedCards;
+    this.enemyCards = Phaser.Utils.Array.Shuffle(
+      Object.keys(this.cardData).filter(id => !this.playerCards.includes(id))
+    ).slice(0, 3);
+
+    this.currentRound = 0;
+    this.battleLog = [];
+
+    this.displayCards();
+    this.time.delayedCall(1000, () => this.startNextRound());
+  }
+
+  displayCards() {
+    const cx = this.cameras.main.centerX;
+    const cy = this.cameras.main.centerY;
+
+    this.playerSprites = [];
+    this.enemySprites = [];
+
+    for (let i = 0; i < 3; i++) {
+      const pCard = this.add.image(cx - 200 + i * 200, cy + 100, this.playerCards[i]).setScale(0.4);
+      const eCard = this.add.image(cx - 200 + i * 200, cy - 100, this.enemyCards[i]).setScale(0.4);
+      this.playerSprites.push(pCard);
+      this.enemySprites.push(eCard);
+    }
+  }
+
+  startNextRound() {
+    if (this.currentRound >= 3) {
+      return this.showBattleResult();
+    }
+
+    const pID = this.playerCards[this.currentRound];
+    const eID = this.enemyCards[this.currentRound];
+    const p = this.cardData[pID];
+    const e = this.cardData[eID];
+
+    const result = this.fight(p, e);
+    this.battleLog.push(`Round ${this.currentRound + 1}: ${pID} (${p.element}) vs ${eID} (${e.element}) → ${result}`);
+
+    this.animateRound(this.currentRound, result);
+
+    this.currentRound++;
+    this.time.delayedCall(2000, () => this.startNextRound());
+  }
+
+  fight(player, enemy) {
+    const advantage = {
+      fire: 'earth',
+      water: 'fire',
+      earth: 'air',
+      air: 'water'
+    };
+
+    let pPower = player.power;
+    let ePower = enemy.power;
+
+    if (advantage[player.element] === enemy.element) pPower += 3;
+    if (advantage[enemy.element] === player.element) ePower += 3;
+
+    if (pPower > ePower) return 'Player Wins';
+    if (pPower < ePower) return 'Enemy Wins';
+    return 'Draw';
+  }
+
+  animateRound(round, result) {
+    const pSprite = this.playerSprites[round];
+    const eSprite = this.enemySprites[round];
+
+    this.tweens.add({
+      targets: [pSprite, eSprite],
+      y: '+=10',
+      yoyo: true,
+      repeat: 5,
+      duration: 100
+    });
+
+    const color = result === 'Player Wins' ? '#00ff00' : result === 'Enemy Wins' ? '#ff0000' : '#ffff00';
+
+    this.time.delayedCall(1000, () => {
+      this.add.text(this.cameras.main.centerX, 40 + round * 20, result, {
+        fontSize: '18px',
+        color
+      }).setOrigin(0.5);
+    });
+  }
+
+  showBattleResult() {
+    const wins = this.battleLog.filter(r => r.includes('Player Wins')).length;
+    const losses = this.battleLog.filter(r => r.includes('Enemy Wins')).length;
+
+    let finalText = 'Draw!';
+    if (wins > losses) {
+      finalText = 'Victory!';
+      window.coins += 100;
+    } else if (losses > wins) {
+      finalText = 'Defeat!';
+    }
+
+    this.add.rectangle(this.cameras.main.centerX, this.cameras.main.centerY, 300, 200, 0x000000, 0.8);
+    this.add.text(this.cameras.main.centerX, this.cameras.main.centerY - 40, finalText, {
+      fontSize: '32px',
+      color: '#ffffff'
+    }).setOrigin(0.5);
+
+    for (let i = 0; i < this.battleLog.length; i++) {
+      this.add.text(this.cameras.main.centerX, this.cameras.main.centerY - 10 + i * 20, this.battleLog[i], {
+        fontSize: '16px',
+        color: '#ffffff'
+      }).setOrigin(0.5);
+    }
+
+    this.time.delayedCall(4000, () => this.scene.start('Home'));
+  }
+}
