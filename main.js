@@ -18,6 +18,7 @@ const config = {
     ShopScene,
     CardsScene,
     BattleScene,
+    BattlePhaseScene,
     HelpScene
   ]
 };
