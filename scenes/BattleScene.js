@@ -4,12 +4,26 @@ export default class BattlePhaseScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('card_fire', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/card_fire.png');
-    // Добавь остальные 9 карт, если нужно
+    const cards = ['card_0', 'card_1', 'card_2', 'card_3', 'card_4', 'card_5', 'card_6', 'card_7', 'card_8'];
+    cards.forEach(card => {
+      this.load.image(card, `https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/${card}.png`);
+    });
   }
 
   create() {
-    this.playerCards = window.selectedCards;
+    this.cardNames = {
+      card_0: 'fire',
+      card_1: 'water',
+      card_2: 'earth',
+      card_3: 'air',
+      card_4: 'air',      // простой воздух
+      card_5: 'fire',     // с эффектом против земли
+      card_6: 'water',    // ничья с воздухом
+      card_7: 'earth',    // авто win против земли
+      card_8: 'air'       // авто win против воды
+    };
+
+    this.playerCards = window.selectedCards; // ['card_2', 'card_5', 'card_8'] и т.п.
     this.enemyCards = this.generateEnemyCards();
 
     this.round = 0;
@@ -20,7 +34,7 @@ export default class BattlePhaseScene extends Phaser.Scene {
   }
 
   generateEnemyCards() {
-    const all = ['fire', 'water', 'earth', 'air', 'card_5', 'card_6', 'card_7', 'card_8', 'card_9'];
+    const all = ['card_0', 'card_1', 'card_2', 'card_3', 'card_4', 'card_5', 'card_6', 'card_7', 'card_8'];
     const shuffled = Phaser.Utils.Array.Shuffle(all);
     return shuffled.slice(0, 3);
   }
@@ -40,8 +54,8 @@ export default class BattlePhaseScene extends Phaser.Scene {
     const yPlayer = this.cameras.main.centerY + 80;
     const yEnemy = this.cameras.main.centerY - 80;
 
-    this.add.image(x, yPlayer, 'card_fire').setScale(0.4); // Замени на соответствующий key
-    this.add.image(x, yEnemy, 'card_fire').setScale(0.4); // Замени на соответствующий key
+    this.add.image(x, yPlayer, player).setScale(0.4);
+    this.add.image(x, yEnemy, enemy).setScale(0.4);
 
     const result = this.getResult(player, enemy);
     this.results.push(result);
@@ -52,7 +66,10 @@ export default class BattlePhaseScene extends Phaser.Scene {
       draw: '='
     }[result];
 
-    this.battleLog.push(`Round ${this.round + 1}: ${player.toUpperCase()} vs ${enemy.toUpperCase()} → ${result.toUpperCase()}`);
+    const playerName = this.cardNames[player] ?? player;
+    const enemyName = this.cardNames[enemy] ?? enemy;
+
+    this.battleLog.push(`Round ${this.round + 1}: ${playerName.toUpperCase()} vs ${enemyName.toUpperCase()} → ${result.toUpperCase()}`);
 
     this.time.delayedCall(1000, () => {
       this.add.text(x, this.cameras.main.centerY, symbol, {
@@ -65,7 +82,10 @@ export default class BattlePhaseScene extends Phaser.Scene {
     });
   }
 
-  getResult(p, e) {
+  getResult(playerId, enemyId) {
+    const p = this.cardNames[playerId];
+    const e = this.cardNames[enemyId];
+
     if (p === e) return 'draw';
 
     const winMap = {
@@ -75,14 +95,13 @@ export default class BattlePhaseScene extends Phaser.Scene {
       air: 'earth'
     };
 
-    // Спец-карты
-    if (p === 'card_5' && e === 'earth') return Math.random() < 0.7 ? 'win' : 'lose';
-    if (p === 'card_6' && e === 'air') return 'draw';
-    if (p === 'card_7' && e === 'earth') return 'win';
-    if (p === 'card_8' && e === 'water') return 'win';
-    if (p === 'card_9' && e !== 'card_9') return Math.random() < 0.6 ? 'win' : 'lose';
+    // Спец-эффекты
+    if (playerId === 'card_5' && e === 'earth') return Math.random() < 0.7 ? 'win' : 'lose';
+    if (playerId === 'card_6' && e === 'air') return 'draw';
+    if (playerId === 'card_7' && e === 'earth') return 'win';
+    if (playerId === 'card_8' && e === 'water') return 'win';
+    if (playerId === 'card_9' && enemyId !== 'card_9') return Math.random() < 0.6 ? 'win' : 'lose';
 
-    // Обычные победы
     if (winMap[p] === e) return 'win';
     if (winMap[e] === p) return 'lose';
 
@@ -95,7 +114,6 @@ export default class BattlePhaseScene extends Phaser.Scene {
 
   showBattleResult() {
     const centerX = this.cameras.main.centerX;
-    const centerY = this.cameras.main.centerY;
 
     const wins = this.results.filter(r => r === 'win').length;
     const draws = this.results.filter(r => r === 'draw').length;
@@ -105,25 +123,23 @@ export default class BattlePhaseScene extends Phaser.Scene {
 
     window.coins += reward;
 
-    this.add.text(centerX, 100, resultText, {
+    this.add.text(centerX, 80, resultText, {
       fontSize: '32px',
       color: '#00ff00'
     }).setOrigin(0.5);
 
-    this.add.text(centerX, 150, `You earned ${reward} coins`, {
+    this.add.text(centerX, 130, `You earned ${reward} coins`, {
       fontSize: '20px',
       color: '#ffffff'
     }).setOrigin(0.5);
 
-    // Лог
     this.battleLog.forEach((line, i) => {
-      this.add.text(centerX, 200 + i * 24, line, {
+      this.add.text(centerX, 180 + i * 24, line, {
         fontSize: '16px',
         color: '#dddddd'
       }).setOrigin(0.5);
     });
 
-    // Кнопка назад
     const btn = this.add.text(centerX, this.scale.height - 80, 'Back to Home', {
       fontSize: '24px',
       backgroundColor: '#444',
