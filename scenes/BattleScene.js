@@ -10,7 +10,7 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   create() {
-    if (window.coins == null) window.coins = 500; // теперь по умолчанию 500 монет
+    if (window.coins == null) window.coins = 300; // обновлено
 
     this.cardData = [
       { id: 1, element: 'fire', name: 'Flame Horn' },
@@ -43,11 +43,11 @@ export default class BattleScene extends Phaser.Scene {
       color: '#fff'
     }).setOrigin(1, 0);
 
-    // Заголовок (опущен на 10px вниз)
-    this.add.text(centerX, 70, 'Choose your cards', {
+    // Заголовок
+    this.add.text(centerX, 90, 'Choose your cards', {
       fontSize: '28px',
       color: '#ffffff'
-    }).setOrigin(0.5);
+    }).setOrigin(0.5); // ← опущено +20
 
     this.createCardGrid();
 
@@ -61,11 +61,11 @@ export default class BattleScene extends Phaser.Scene {
   createCardGrid() {
     const cols = 3;
     const spacing = 20;
-    const size = 105; // Увеличено на 5px
+    const size = 105;
     const scale = size / 256;
     const centerX = this.cameras.main.centerX;
     const startX = centerX - (cols * (size + spacing) - spacing) / 2;
-    const startY = 100; // Опущено на 10px вниз
+    const startY = 120; // ← опущено ещё на 20px
 
     this.cardData.forEach((card, i) => {
       const col = i % cols;
@@ -86,47 +86,54 @@ export default class BattleScene extends Phaser.Scene {
         padding: { left: 4, right: 4, top: 2, bottom: 2 }
       }).setOrigin(0.5);
 
-      img.on('pointerdown', () => this.handlePurchase(card, img, priceText));
+      img.originalX = img.x; // запоминаем оригинальные координаты
+      this.handleCardClick(img, priceText, card);
     });
   }
 
-  handlePurchase(card, img, label) {
-    if (this.selectedCards.length >= 3 || this.selectedCards.includes(card)) return;
+  handleCardClick(img, label, card) {
+    img.on('pointerdown', () => {
+      if (this.selectedCards.length >= 3 || this.selectedCards.includes(card)) return;
 
-    if (window.coins < card.price) {
-      this.tweens.add({ // вибрация при нехватке
+      if (window.coins < card.price) {
+        // Вибрация при нехватке
+        this.tweens.add({
+          targets: img,
+          x: img.originalX + 6,
+          duration: 50,
+          yoyo: true,
+          repeat: 2,
+          onComplete: () => {
+            img.x = img.originalX;
+            label.setColor('#ff4444');
+          }
+        });
+        return;
+      }
+
+      // Покупка
+      window.coins -= card.price;
+      this.coinsText.setText(`Coins: ${window.coins}`);
+      label.setColor('#00ff00');
+
+      this.tweens.add({
         targets: img,
-        x: img.x + 5,
-        duration: 50,
-        yoyo: true,
-        repeat: 2,
-        onComplete: () => img.x -= 5
+        scaleX: img.scaleX * 1.1,
+        scaleY: img.scaleY * 1.1,
+        duration: 100,
+        yoyo: true
       });
-      label.setColor('#ff4444');
-      return;
-    }
 
-    window.coins -= card.price;
-    this.coinsText.setText(`Coins: ${window.coins}`);
-    label.setColor('#00ff00');
+      this.selectedCards.push(card);
+      this.statusText.setText(`Selected: ${this.selectedCards.length} / 3`);
 
-    this.tweens.add({ // вибрация при покупке
-      targets: img,
-      scaleX: img.scaleX * 1.1,
-      scaleY: img.scaleY * 1.1,
-      duration: 100,
-      yoyo: true
+      if (this.selectedCards.length === 3) {
+        this.time.delayedCall(1000, () => this.startBattle());
+      }
     });
-
-    this.selectedCards.push(card);
-    this.statusText.setText(`Selected: ${this.selectedCards.length} / 3`);
-
-    if (this.selectedCards.length === 3) {
-      this.time.delayedCall(1000, () => this.startBattle());
-    }
   }
 
   startBattle() {
-    this.scene.start('Home'); // временный переход
+    this.scene.start('Home'); // пока просто назад
   }
 }
