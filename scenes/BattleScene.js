@@ -1,139 +1,122 @@
-export default class BattlePhaseScene extends Phaser.Scene {
+export default class BattleScene extends Phaser.Scene {
   constructor() {
-    super('BattlePhase');
+    super('Battle');
   }
 
   preload() {
     for (let i = 1; i <= 9; i++) {
-      this.load.image(`card_${i}`, `https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/card_${i}.png`);
+      this.load.image(`card_${i}`, `assets/cards/card_${i}.png`);
     }
+    this.load.image('bg', 'assets/bg_battle.png');
   }
 
   create() {
-    this.playerCards = window.selectedCards; // ['card_3', 'card_7', 'card_8']
-    this.enemyCards = Phaser.Utils.Array.Shuffle([...Array(9)].map((_, i) => `card_${i + 1}`)).slice(0, 3);
+    this.add.image(this.cameras.main.centerX, this.cameras.main.centerY, 'bg').setDisplaySize(this.cameras.main.width, this.cameras.main.height);
 
-    this.cardTypes = {
-      card_1: 'fire',
-      card_2: 'water',
-      card_3: 'earth',
-      card_4: 'air',
-      card_5: 'fire',
-      card_6: 'water',
-      card_7: 'earth',
-      card_8: 'air',
-      card_9: 'secret'
-    };
-
-    this.results = [];
+    this.playerCards = window.selectedCards || [];
+    this.enemyCards = this.generateEnemyCards();
+    this.currentRound = 0;
     this.battleLog = [];
-    this.round = 0;
 
-    this.runRound();
+    this.displayCards();
+    this.time.delayedCall(1000, () => this.startNextRound());
   }
 
-  runRound() {
-    if (this.round >= 3) {
-      this.showResult();
-      return;
+  generateEnemyCards() {
+    const allIds = Array.from({ length: 9 }, (_, i) => `card_${i + 1}`);
+    const shuffled = Phaser.Utils.Array.Shuffle(allIds);
+    return shuffled.filter(id => !this.playerCards.includes(id)).slice(0, 3);
+  }
+
+  displayCards() {
+    const centerX = this.cameras.main.centerX;
+    const centerY = this.cameras.main.centerY;
+
+    this.playerSprites = [];
+    this.enemySprites = [];
+
+    for (let i = 0; i < 3; i++) {
+      const pCard = this.add.image(centerX - 200 + i * 200, centerY + 100, this.playerCards[i]).setScale(0.4);
+      const eCard = this.add.image(centerX - 200 + i * 200, centerY - 100, this.enemyCards[i]).setScale(0.4);
+      this.playerSprites.push(pCard);
+      this.enemySprites.push(eCard);
+    }
+  }
+
+  startNextRound() {
+    if (this.currentRound >= 3) {
+      return this.showBattleResult();
     }
 
-    this.clearScene();
+    const round = this.currentRound;
+    const pCard = this.playerCards[round];
+    const eCard = this.enemyCards[round];
 
-    const playerCard = this.playerCards[this.round];
-    const enemyCard = this.enemyCards[this.round];
-    const px = this.cameras.main.centerX;
-    const py = this.cameras.main.centerY + 100;
-    const ey = this.cameras.main.centerY - 100;
+    const result = this.fight(pCard, eCard);
+    this.battleLog.push(`Round ${round + 1}: ${pCard} vs ${eCard} → ${result}`);
 
-    this.add.image(px, py, playerCard).setScale(0.4);
-    this.add.image(px, ey, enemyCard).setScale(0.4);
+    this.animateRound(round, result);
 
-    const result = this.getResult(playerCard, enemyCard);
-    this.results.push(result);
+    this.currentRound++;
+    this.time.delayedCall(2000, () => this.startNextRound());
+  }
 
-    const symbol = { win: '✔', lose: '❌', draw: '=' }[result];
-    const pType = this.cardTypes[playerCard];
-    const eType = this.cardTypes[enemyCard];
+  fight(playerCardId, enemyCardId) {
+    // Примитивная логика: ID больше — победа
+    const pNum = parseInt(playerCardId.split('_')[1]);
+    const eNum = parseInt(enemyCardId.split('_')[1]);
 
-    this.battleLog.push(`Round ${this.round + 1}: ${pType.toUpperCase()} vs ${eType.toUpperCase()} → ${result.toUpperCase()}`);
+    if (pNum > eNum) return 'Player Wins';
+    if (pNum < eNum) return 'Enemy Wins';
+    return 'Draw';
+  }
 
+  animateRound(round, result) {
+    const pSprite = this.playerSprites[round];
+    const eSprite = this.enemySprites[round];
+
+    this.tweens.add({
+      targets: [pSprite, eSprite],
+      y: '+=10',
+      yoyo: true,
+      repeat: 5,
+      duration: 100
+    });
+
+    const color = result === 'Player Wins' ? 0x00ff00 : result === 'Enemy Wins' ? 0xff0000 : 0xffff00;
     this.time.delayedCall(1000, () => {
-      const color = { win: 0x00ff00, lose: 0xff0000, draw: 0xaaaaaa }[result];
-      this.add.text(px, this.cameras.main.centerY, symbol, {
-        fontSize: '36px',
-        color: '#ffffff'
-      }).setOrigin(0.5);
-
-      this.round++;
-      this.time.delayedCall(1300, () => this.runRound());
+      this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, result, {
+        fontSize: '24px',
+        color: `#${color.toString(16)}`
+      }).setOrigin(0.5).setDepth(10);
     });
   }
 
-  getResult(playerId, enemyId) {
-    const p = this.cardTypes[playerId];
-    const e = this.cardTypes[enemyId];
+  showBattleResult() {
+    const wins = this.battleLog.filter(log => log.includes('Player Wins')).length;
+    const losses = this.battleLog.filter(log => log.includes('Enemy Wins')).length;
 
-    // Ничья по типу
-    if (p === e) return 'draw';
+    let finalText = 'Draw!';
+    if (wins > losses) {
+      finalText = 'Victory!';
+      window.coins += 100; // Награда
+    } else if (losses > wins) {
+      finalText = 'Defeat!';
+    }
 
-    // Особые эффекты
-    if (playerId === 'card_5' && e === 'earth') return Math.random() < 0.7 ? 'win' : 'lose'; // +20% против земли
-    if (playerId === 'card_6' && e === 'air') return 'draw'; // ничья с воздухом
-    if (playerId === 'card_7' && e === 'earth') return 'win'; // победа над землей
-    if (playerId === 'card_8' && e === 'water') return 'win'; // победа над водой
-    if (playerId === 'card_9' && enemyId !== 'card_9') return Math.random() < 0.6 ? 'win' : 'lose'; // секрет
-
-    const beats = {
-      fire: 'air',
-      water: 'fire',
-      earth: 'water',
-      air: 'earth'
-    };
-
-    if (beats[p] === e) return 'win';
-    if (beats[e] === p) return 'lose';
-
-    return Math.random() < 0.5 ? 'win' : 'lose'; // равные, но разные типы
-  }
-
-  clearScene() {
-    this.children.removeAll();
-  }
-
-  showResult() {
-    const cx = this.cameras.main.centerX;
-    const wins = this.results.filter(r => r === 'win').length;
-    const draws = this.results.filter(r => r === 'draw').length;
-    const victory = wins >= 2;
-    const reward = victory ? 100 : 20;
-
-    window.coins += reward;
-
-    this.add.text(cx, 80, victory ? 'Victory!' : 'Defeat', {
+    this.add.rectangle(this.cameras.main.centerX, this.cameras.main.centerY, 300, 200, 0x000000, 0.8);
+    this.add.text(this.cameras.main.centerX, this.cameras.main.centerY - 60, finalText, {
       fontSize: '32px',
-      color: victory ? '#00ff00' : '#ff3333'
-    }).setOrigin(0.5);
-
-    this.add.text(cx, 130, `You earned ${reward} coins`, {
-      fontSize: '20px',
       color: '#ffffff'
     }).setOrigin(0.5);
 
-    this.battleLog.forEach((line, i) => {
-      this.add.text(cx, 180 + i * 26, line, {
+    for (let i = 0; i < this.battleLog.length; i++) {
+      this.add.text(this.cameras.main.centerX, this.cameras.main.centerY - 20 + i * 20, this.battleLog[i], {
         fontSize: '16px',
-        color: '#dddddd'
+        color: '#ffffff'
       }).setOrigin(0.5);
-    });
+    }
 
-    this.add.text(cx, this.scale.height - 80, '← Back to Home', {
-      fontSize: '22px',
-      backgroundColor: '#444',
-      color: '#fff',
-      padding: 10
-    }).setOrigin(0.5).setInteractive().on('pointerdown', () => {
-      this.scene.start('Home');
-    });
+    this.time.delayedCall(4000, () => this.scene.start('Home'));
   }
 }
