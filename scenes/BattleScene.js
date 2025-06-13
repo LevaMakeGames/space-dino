@@ -10,7 +10,7 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   create() {
-    if (window.coins == null) window.coins = 200;
+    if (window.coins == null) window.coins = 400;
 
     this.cardData = [
       { id: 1, element: 'fire', name: 'Flame Horn' },
