@@ -15,6 +15,8 @@ export default class BattlePhaseScene extends Phaser.Scene {
       return;
     }
 
+    if (window.gems == null) window.gems = 0;
+
     this.enemyCards = this.getRandomEnemyCards();
     this.playerCardImages = [];
     this.enemyCardImages = [];
@@ -80,7 +82,7 @@ export default class BattlePhaseScene extends Phaser.Scene {
         this.tweens.add({ targets: enemyImg, scale: 0.62, duration: 200, yoyo: true });
         this.tweens.add({ targets: playerImg, scale: 0.42, angle: -10, duration: 200 });
       } else {
-        this.tweens.add({ targets: [playerImg, enemyImg], scale: 0.52, duration: 200 });
+        this.tweens.add({ targets: [playerImg, enemyImg], scale: 0.6, duration: 150, yoyo: true });
       }
     });
 
@@ -139,22 +141,55 @@ export default class BattlePhaseScene extends Phaser.Scene {
   }
 
   showFinalResult() {
-    let text = `\nYou: ${this.playerWins} | Enemy: ${this.enemyWins}\n`;
+    const centerX = this.cameras.main.centerX;
+    const centerY = this.cameras.main.centerY;
+
+    let resultEmoji = '';
+    let resultText = '';
+    let coinReward = 0;
+    let gemReward = 0;
+    let color = '#ffffff';
 
     if (this.playerWins > this.enemyWins) {
-      text += '🎉 Victory! +100 coins';
-      window.coins += 100;
+      resultEmoji = '🏆';
+      resultText = 'Victory!';
+      coinReward = 100;
+      gemReward = 3;
+      color = '#00ff00';
     } else if (this.enemyWins > this.playerWins) {
-      text += '💀 Defeat!';
+      resultEmoji = '💀';
+      resultText = 'Defeat';
+      color = '#ff4444';
     } else {
-      text += '⚖️ Draw! +30 coins';
-      window.coins += 30;
+      resultEmoji = '⚖️';
+      resultText = 'Draw!';
+      coinReward = 30;
+      gemReward = 1;
+      color = '#ccccff';
     }
 
-    this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, text, {
+    window.coins += coinReward;
+    window.gems += gemReward;
+
+    this.add.text(centerX, centerY - 100, '🏁 BATTLE OVER', {
+      fontSize: '36px',
+      color: '#ffffff'
+    }).setOrigin(0.5);
+
+    this.add.text(centerX, centerY - 30, resultEmoji, {
+      fontSize: '80px'
+    }).setOrigin(0.5);
+
+    this.add.text(centerX, centerY + 40, resultText, {
       fontSize: '28px',
-      color: '#ffffff',
-      align: 'center'
+      color: color
+    }).setOrigin(0.5);
+
+    const rewardLine = `+${coinReward} 💰     +${gemReward} 💎`;
+
+    this.add.text(centerX, centerY + 80, rewardLine, {
+      fontSize: '24px',
+      color: '#ffffff'
     }).setOrigin(0.5);
 
     this.time.delayedCall(3000, () => {
