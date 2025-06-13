@@ -134,3 +134,54 @@ export default class BattlePhaseScene extends Phaser.Scene {
 
     if (beats[player.element] === enemy.element) return 'player';
     if (beats[enemy.element] === player.element) return 'enemy';
+
+    return 'draw';
+  }
+
+  showFinalResult() {
+    let text = `\nYou: ${this.playerWins} | Enemy: ${this.enemyWins}\n`;
+
+    if (this.playerWins > this.enemyWins) {
+      text += '🎉 Victory! +100 coins';
+      window.coins += 100;
+    } else if (this.enemyWins > this.playerWins) {
+      text += '💀 Defeat!';
+    } else {
+      text += '⚖️ Draw! +30 coins';
+      window.coins += 30;
+    }
+
+    this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, text, {
+      fontSize: '28px',
+      color: '#ffffff',
+      align: 'center'
+    }).setOrigin(0.5);
+
+    this.time.delayedCall(3000, () => {
+      this.scene.start('Home');
+    });
+  }
+
+  getRandomEnemyCards() {
+    const allIds = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const playerIds = window.selectedCards.map(c => c.id);
+    const available = allIds.filter(id => !playerIds.includes(id));
+    Phaser.Utils.Array.Shuffle(available);
+    return available.slice(0, 3).map(id => ({ id, ...this.getCardData(id) }));
+  }
+
+  getCardData(id) {
+    const cardInfo = [
+      { id: 1, element: 'fire', name: 'Flame Horn' },
+      { id: 2, element: 'water', name: 'Ice Fang' },
+      { id: 3, element: 'earth', name: 'Stone Spike' },
+      { id: 4, element: 'air', name: 'Wind Dash' },
+      { id: 5, element: 'fire', name: 'Ash Burst', special: 'vs_earth_20' },
+      { id: 6, element: 'water', name: 'Calm Water', special: 'draw_air' },
+      { id: 7, element: 'earth', name: 'Clay Core', special: 'win_vs_earth' },
+      { id: 8, element: 'air', name: 'Storm Slice', special: 'win_vs_water' },
+      { id: 9, element: 'secret', name: 'Secret Card', special: 'secret_power' }
+    ];
+    return cardInfo.find(c => c.id === id);
+  }
+}
