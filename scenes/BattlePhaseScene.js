@@ -21,10 +21,7 @@ export default class BattlePhaseScene extends Phaser.Scene {
     this.playerCardImages = [];
     this.enemyCardImages = [];
 
-    this.add.text(this.cameras.main.centerX, 20, 'Battle Phase', {
-      fontSize: '32px',
-      color: '#ffffff'
-    }).setOrigin(0.5);
+   
 
     this.showCards();
 
