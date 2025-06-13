@@ -2,6 +2,7 @@ import HomeScene from './scenes/HomeScene.js';
 import ShopScene from './scenes/ShopScene.js';
 import CardsScene from './scenes/CardsScene.js';
 import BattleScene from './scenes/BattleScene.js';
+import BattlePhaseScene from './scenes/BattlePhaseScene.js';
 import HelpScene from './scenes/HelpScene.js';
 
 Telegram.WebApp.ready();
@@ -17,6 +18,7 @@ const config = {
     ShopScene,
     CardsScene,
     BattleScene,
+    BattlePhaseScene,
     HelpScene
   ]
 };
