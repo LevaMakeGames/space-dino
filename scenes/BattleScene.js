@@ -94,8 +94,8 @@ export default class BattleScene extends Phaser.Scene {
     }
   }
 
-  startBattle() {
-    window.selectedCards = this.selectedCards;
-    this.scene.start('BattlePhase'); // новая сцена боя
-  }
+ startBattle() {
+  window.selectedCards = this.selectedCards;
+  this.scene.start('BattlePhase'); // переход в новую сцену боя
+}
 }
