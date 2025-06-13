@@ -10,7 +10,7 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   create() {
-    if (window.coins == null) window.coins = 400;
+    if (window.coins == null) window.coins = 500;
 
     this.cardData = [
       { id: 1, element: 'fire', name: 'Flame Horn' },
@@ -25,7 +25,6 @@ export default class BattleScene extends Phaser.Scene {
     ].map(c => ({ ...c, price: 50 + c.id * 10 }));
 
     this.selectedCards = [];
-    this.roundResults = [];
 
     this.add.text(this.cameras.main.centerX, 20, 'Choose your cards', {
       fontSize: '28px',
@@ -78,7 +77,7 @@ export default class BattleScene extends Phaser.Scene {
     if (this.selectedCards.length >= 3 || this.selectedCards.includes(card)) return;
 
     if (window.coins < card.price) {
-      label.setColor('#ff4444'); // красный — не хватает
+      label.setColor('#ff4444'); // не хватает монет
       return;
     }
 
@@ -96,7 +95,7 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   startBattle() {
-    // Здесь логика боя как раньше
-    this.scene.start('Home'); // пока выход, заменишь на свою боевую сцену
+    window.selectedCards = this.selectedCards;
+    this.scene.start('BattlePhase'); // новая сцена боя
   }
 }
