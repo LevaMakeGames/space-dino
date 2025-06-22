@@ -56,7 +56,7 @@ export default class BattleScene extends Phaser.Scene {
     const scale = size / 256;
     const centerX = this.cameras.main.centerX;
     const startX = centerX - (cols * (size + spacing) - spacing) / 2;
-    const startY = 120; // было 80 -> +40
+    const startY = 120; // карты смещены вниз
 
     this.cardData.forEach((card, i) => {
       const col = i % cols;
@@ -68,18 +68,18 @@ export default class BattleScene extends Phaser.Scene {
         .setScale(scale)
         .setInteractive();
 
-      // Иконка + текст цены идеально по центру и по линии
+      // Иконка и цена
       const priceIcon = this.add.image(x + size / 2 - 15, y + size + 10, 'coinDino').setScale(0.3).setOrigin(1, 0.5);
       const priceText = this.add.text(x + size / 2 - 10, y + size + 10, `${card.price}`, {
         fontSize: '16px',
         color: '#ffffff'
       }).setOrigin(0, 0.5);
 
-      img.on('pointerdown', () => this.handlePurchase(card, img, priceText));
+      img.on('pointerdown', () => this.handlePurchase(card, img, priceText, x + size / 2, y + size / 2));
     });
   }
 
-  handlePurchase(card, img, label) {
+  handlePurchase(card, img, label, cx, cy) {
     if (this.selectedCards.length >= 3 || this.selectedCards.includes(card)) return;
 
     if (window.coins < card.price) {
@@ -89,8 +89,17 @@ export default class BattleScene extends Phaser.Scene {
 
     window.coins -= card.price;
     this.coinsText.setText(`${window.coins}`);
-    img.setTint(0x00ff00);
     label.setColor('#00ff00');
+
+    // ✅ Добавляем рамку
+    const border = this.add.rectangle(cx, cy, img.displayWidth + 10, img.displayHeight + 10)
+      .setStrokeStyle(4, 0xffff00) // жёлтая рамка
+      .setDepth(1);
+
+    // ✅ Добавляем галочку
+    const check = this.add.text(cx + img.displayWidth / 2 - 10, cy - img.displayHeight / 2 + 10, '✅', {
+      fontSize: '24px'
+    }).setOrigin(0.5).setDepth(2);
 
     this.selectedCards.push(card);
     this.statusText.setText(`Selected: ${this.selectedCards.length} / 3`);
