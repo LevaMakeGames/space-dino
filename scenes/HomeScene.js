@@ -17,15 +17,15 @@ export default class HomeScene extends Phaser.Scene {
     this.load.image('b_4', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/b_4.png');
     this.load.image('b_5', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/b_5.png');
 
-    // Твои новые спрайты:
-    this.load.image('coinDino', 'assets/coinDino.png'); // путь к твоему файлу монеты с динозавром
-    this.load.image('gem', 'assets/gem.png'); // путь к твоему файлу голубого алмаза
+    // Твои новые иконки
+    this.load.image('coinDino', 'assets/coinDino.png');
+    this.load.image('gem', 'assets/gem.png');
   }
 
   create() {
-    // Гарантия валют
-    if (window.coins == null) window.coins = 0;
-    if (window.gems == null) window.gems = 0;
+    // Валюты по умолчанию
+    if (window.coins == null) window.coins = 500;
+    if (window.gems == null) window.gems = 100;
 
     if (!window.boosters) {
       window.boosters = {
@@ -46,15 +46,15 @@ export default class HomeScene extends Phaser.Scene {
     const scale = Math.max(scaleX, scaleY);
     bg.setScale(scale).setDepth(0);
 
-    // === Баланс: иконки и числа ===
+    // === Баланс: иконки + числа ===
     const coinIcon = this.add.image(40, 40, 'coinDino').setScale(0.5).setOrigin(0.5).setDepth(3);
-    const coinText = this.add.text(70, 28, `${window.coins}`, {
+    const coinText = this.add.text(70, 40, `${window.coins}`, {
       fontSize: '24px',
       color: '#ffffff'
     }).setOrigin(0, 0.5).setDepth(3);
 
     const gemIcon = this.add.image(width - 80, 40, 'gem').setScale(0.5).setOrigin(0.5).setDepth(3);
-    const gemText = this.add.text(width - 50, 28, `${window.gems}`, {
+    const gemText = this.add.text(width - 50, 40, `${window.gems}`, {
       fontSize: '24px',
       color: '#ffffff'
     }).setOrigin(0, 0.5).setDepth(3);
