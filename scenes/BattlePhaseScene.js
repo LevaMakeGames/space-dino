@@ -4,11 +4,11 @@ export default class BattlePhaseScene extends Phaser.Scene {
   }
 
   preload() {
-    // Загружаем все карты
+    // Загружаем карты
     for (let i = 1; i <= 9; i++) {
       this.load.image(`card_${i}`, `https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/card_${i}.png`);
     }
-    // Загружаем фон стола напрямую из GitHub
+    // Загружаем фон из GitHub
     this.load.image('battleBg', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/battleBg.png');
   }
 
@@ -18,14 +18,14 @@ export default class BattlePhaseScene extends Phaser.Scene {
       return;
     }
 
-    // Добавляем фон и растягиваем на весь экран
+    // Фон
     const bg = this.add.image(0, 0, 'battleBg').setOrigin(0);
     const scaleX = this.scale.width / bg.width;
     const scaleY = this.scale.height / bg.height;
     const scale = Math.max(scaleX, scaleY);
     bg.setScale(scale).setDepth(0);
 
-    // Остальная логика боя
+    // Карты бота и игрока
     this.enemyCards = this.getRandomEnemyCards();
     this.playerCardImages = [];
     this.enemyCardImages = [];
@@ -72,18 +72,25 @@ export default class BattlePhaseScene extends Phaser.Scene {
 
     const outcome = this.determineWinner(player, enemy);
 
+    // ✅ 1) Оба двигаются вперёд
     this.tweens.add({ targets: playerImg, y: playerImg.y - 50, duration: 300 });
     this.tweens.add({ targets: enemyImg, y: enemyImg.y + 50, duration: 300 });
 
     this.time.delayedCall(400, () => {
+      // ✅ 2) Победитель делает "удар", проигравший уменьшается
       if (outcome === 'player') {
         this.playerWins++;
+        this.tweens.add({ targets: playerImg, scale: 0.62, duration: 200, yoyo: true });
+        this.tweens.add({ targets: enemyImg, scale: 0.42, angle: 10, duration: 200 });
       } else {
         this.enemyWins++;
+        this.tweens.add({ targets: enemyImg, scale: 0.62, duration: 200, yoyo: true });
+        this.tweens.add({ targets: playerImg, scale: 0.42, angle: -10, duration: 200 });
       }
     });
 
     this.time.delayedCall(1000, () => {
+      // ✅ 3) Убираем карты, ставим эмодзи
       playerImg.destroy();
       enemyImg.destroy();
 
