@@ -51,14 +51,15 @@ export default class BattleScene extends Phaser.Scene {
 
   createCardGrid() {
     const cols = 3;
-    const spacing = 20;
-    const size = 100;
+    const spacing = 40;   // больше отступ между картами
+    const size = 140;     // больше базовый размер карт
     const scale = size / 256;
+
     const centerX = this.cameras.main.centerX;
     const startX = centerX - (cols * (size + spacing) - spacing) / 2;
-    const startY = 120; // смещаем вниз
+    const startY = 120; // смещено вниз
 
-    this.cards = []; // массив для хранения ссылок на иконку и цену
+    this.cards = [];
 
     this.cardData.forEach((card, i) => {
       const col = i % cols;
@@ -70,9 +71,10 @@ export default class BattleScene extends Phaser.Scene {
         .setScale(scale)
         .setInteractive();
 
-      const priceIcon = this.add.image(x + size / 2 - 15, y + size + 10, 'coinDino').setScale(0.3).setOrigin(1, 0.5);
-      const priceText = this.add.text(x + size / 2 - 10, y + size + 10, `${card.price}`, {
-        fontSize: '16px',
+      const priceIcon = this.add.image(x + size / 2 - 20, y + size + 12, 'coinDino')
+        .setScale(0.3).setOrigin(1, 0.5);
+      const priceText = this.add.text(x + size / 2 - 15, y + size + 12, `${card.price}`, {
+        fontSize: '18px',
         color: '#ffffff'
       }).setOrigin(0, 0.5);
 
@@ -97,7 +99,7 @@ export default class BattleScene extends Phaser.Scene {
     priceIcon.destroy();
     priceText.destroy();
 
-    // ✅ Прямоугольная рамка по реальным размерам
+    // ✅ Прямоугольная рамка по фактическим размерам
     const border = this.add.rectangle(
       img.x,
       img.y,
