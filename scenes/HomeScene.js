@@ -23,7 +23,6 @@ export default class HomeScene extends Phaser.Scene {
   }
 
   create() {
-    // Валюты по умолчанию
     if (window.coins == null) window.coins = 500;
     if (window.gems == null) window.gems = 100;
 
@@ -46,15 +45,15 @@ export default class HomeScene extends Phaser.Scene {
     const scale = Math.max(scaleX, scaleY);
     bg.setScale(scale).setDepth(0);
 
-    // === Баланс: иконки + числа ===
+    // Баланс: иконки + числа
     const coinIcon = this.add.image(40, 40, 'coinDino').setScale(0.5).setOrigin(0.5).setDepth(3);
-    const coinText = this.add.text(70, 40, ${window.coins}, {
+    const coinText = this.add.text(70, 40, `${window.coins}`, {
       fontSize: '24px',
       color: '#ffffff'
     }).setOrigin(0, 0.5).setDepth(3);
 
     const gemIcon = this.add.image(width - 80, 40, 'gem').setScale(0.5).setOrigin(0.5).setDepth(3);
-    const gemText = this.add.text(width - 50, 40, ${window.gems}, {
+    const gemText = this.add.text(width - 50, 40, `${window.gems}`, {
       fontSize: '24px',
       color: '#ffffff'
     }).setOrigin(0, 0.5).setDepth(3);
@@ -63,7 +62,6 @@ export default class HomeScene extends Phaser.Scene {
     const dino = this.add.image(centerX, centerY + 100, 'dino_open').setDepth(1);
     this.dinoTween = null;
 
-    // Моргание
     this.time.addEvent({
       delay: Phaser.Math.Between(3000, 6000),
       loop: true,
@@ -73,19 +71,17 @@ export default class HomeScene extends Phaser.Scene {
       }
     });
 
-    // Автокликер
     if (window.boosters.boosterAuto) {
       this.time.addEvent({
         delay: 1000,
         loop: true,
         callback: () => {
           window.coins++;
-          coinText.setText(${window.coins});
+          coinText.setText(`${window.coins}`);
         }
       });
     }
 
-    // Клик
     let clickCount = 0;
 
     this.input.on('pointerdown', () => {
@@ -121,11 +117,10 @@ export default class HomeScene extends Phaser.Scene {
 
       window.coins += clickValue;
 
-      // Случайный бонус к алмазам (5% шанс)
       if (Math.random() < 0.05) window.gems += 1;
 
-      coinText.setText(${window.coins});
-      gemText.setText(${window.gems});
+      coinText.setText(`${window.coins}`);
+      gemText.setText(`${window.gems}`);
     });
 
     // Спрайты бустеров
@@ -138,7 +133,7 @@ export default class HomeScene extends Phaser.Scene {
     ];
 
     const icons = boosterKeys.map((key, i) =>
-      window.boosters[key] ? b_${i + 1} : 'b_0'
+      window.boosters[key] ? `b_${i + 1}` : 'b_0'
     );
 
     const spriteSize = 100;
