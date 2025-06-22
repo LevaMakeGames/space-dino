@@ -8,9 +8,17 @@ export default class HomeScene extends Phaser.Scene {
     this.load.image('dino_open', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/dino_open.png');
     this.load.image('dino_closed', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/dino_closed.png');
     this.load.image('coin', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/coin.png');
+
+    this.load.image('b_0', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/b_0.png');
+    this.load.image('b_1', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/b_1.png');
+    this.load.image('b_2', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/b_2.png');
+    this.load.image('b_3', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/b_3.png');
+    this.load.image('b_4', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/b_4.png');
+    this.load.image('b_5', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/b_5.png');
+
     this.load.image('coinDino', 'assets/coinDino.png');
     this.load.image('gem', 'assets/gem.png');
-    // menuBtn убираем — больше не нужен!
+    // menuBtn убрал — не нужен
   }
 
   create() {
@@ -113,50 +121,90 @@ export default class HomeScene extends Phaser.Scene {
       gemText.setText(`${window.gems}`);
     });
 
+    // Бустеры — без изменений!
+    const boosterKeys = [
+      'boosterFarm',
+      'boosterAuto',
+      'boosterSpeed',
+      'boosterLuck',
+      'boosterGold'
+    ];
+
+    const icons = boosterKeys.map((key, i) =>
+      window.boosters[key] ? `b_${i + 1}` : 'b_0'
+    );
+
+    const spriteSize = 100;
+    const spacing = 30;
+    const topOffset = height * 0.2 - 20;
+
+    const positions = [
+      { x: centerX - spriteSize - spacing, y: topOffset },
+      { x: centerX,                        y: topOffset },
+      { x: centerX + spriteSize + spacing, y: topOffset },
+      { x: centerX - spriteSize / 2 - spacing / 2, y: topOffset + spriteSize + spacing },
+      { x: centerX + spriteSize / 2 + spacing / 2, y: topOffset + spriteSize + spacing }
+    ];
+
+    icons.forEach((iconKey, i) => {
+      this.add.image(positions[i].x, positions[i].y, iconKey)
+        .setDisplaySize(spriteSize, spriteSize)
+        .setOrigin(0.5)
+        .setDepth(0.5);
+    });
+
     this.addNavigation();
   }
 
   addNavigation() {
     const buttons = [
       { name: 'Shop', label: 'SHOP', scale: 1 },
-      { name: 'Battle', label: 'BATTLE', scale: 1.5 }, // БОЛЬШЕ!
+      { name: 'Battle', label: 'BATTLE', scale: 1.5 },
       { name: 'About', label: 'ABOUT', scale: 1 }
     ];
 
     const padding = 10;
     const buttonHeight = 50;
-    const y = this.scale.height - 50;
+    const y = this.scale.height - buttonHeight / 2 - 10;
 
-    const totalScale = buttons.reduce((acc, btn) => acc + btn.scale, 0);
+    const totalScale = buttons.reduce((sum, btn) => sum + btn.scale, 0);
     const availableWidth = this.scale.width - padding * (buttons.length + 1);
     const unitWidth = availableWidth / totalScale;
 
-    buttons.forEach((btn, i) => {
-      const btnWidth = unitWidth * btn.scale;
-      const x = padding + i * (btnWidth + padding);
+    let offsetX = padding;
 
-      // Нарисовать прямоугольник
+    buttons.forEach((btn) => {
+      const btnWidth = unitWidth * btn.scale;
+
       const graphics = this.add.graphics();
-      graphics.fillStyle(0x4e6cef, 1); // Синий цвет
+      graphics.fillStyle(0x4e6cef, 1);
       graphics.fillRoundedRect(0, 0, btnWidth, buttonHeight, 12);
 
-      const text = this.add.text(btnWidth/2, buttonHeight/2, btn.label, {
+      const text = this.add.text(btnWidth / 2, buttonHeight / 2, btn.label, {
         fontSize: '18px',
         color: '#ffffff',
         fontFamily: 'Arial'
       }).setOrigin(0.5);
 
-      const container = this.add.container(x, y, [graphics, text])
+      const container = this.add.container(offsetX, y, [graphics, text])
         .setSize(btnWidth, buttonHeight)
         .setInteractive({ useHandCursor: true })
         .setDepth(3);
 
-      // Эффект наведения
-      container.on('pointerover', () => graphics.fillStyle(0x3350cc, 1).fillRoundedRect(0, 0, btnWidth, buttonHeight, 12));
-      container.on('pointerout',  () => graphics.fillStyle(0x4e6cef, 1).fillRoundedRect(0, 0, btnWidth, buttonHeight, 12));
+      container.on('pointerover', () => {
+        graphics.clear();
+        graphics.fillStyle(0x3350cc, 1);
+        graphics.fillRoundedRect(0, 0, btnWidth, buttonHeight, 12);
+      });
+      container.on('pointerout', () => {
+        graphics.clear();
+        graphics.fillStyle(0x4e6cef, 1);
+        graphics.fillRoundedRect(0, 0, btnWidth, buttonHeight, 12);
+      });
 
-      // Клик
       container.on('pointerdown', () => this.scene.start(btn.name));
+
+      offsetX += btnWidth + padding;
     });
   }
 }
