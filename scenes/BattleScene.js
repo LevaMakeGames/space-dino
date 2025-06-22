@@ -51,7 +51,7 @@ export default class BattleScene extends Phaser.Scene {
 
   createCardGrid() {
     const cols = 3;
-    const spacing = 10;   // твой новый spacing
+    const spacing = 30;   // твой новый spacing
     const size = 120;     // твой новый size
     const scale = size / 256;
 
