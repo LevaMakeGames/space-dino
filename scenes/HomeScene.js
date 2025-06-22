@@ -8,6 +8,7 @@ export default class HomeScene extends Phaser.Scene {
     this.load.image('dino_open', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/dino_open.png');
     this.load.image('dino_closed', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/dino_closed.png');
     this.load.image('coin', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/coin.png');
+    this.load.image('menuBtn', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/menuBtn.png');
 
     this.load.image('b_0', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/b_0.png');
     this.load.image('b_1', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/b_1.png');
@@ -16,12 +17,13 @@ export default class HomeScene extends Phaser.Scene {
     this.load.image('b_4', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/b_4.png');
     this.load.image('b_5', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/b_5.png');
 
+    // Твои новые иконки
     this.load.image('coinDino', 'assets/coinDino.png');
     this.load.image('gem', 'assets/gem.png');
-    // menuBtn убрал — не нужен
   }
 
   create() {
+    // Валюты по умолчанию
     if (window.coins == null) window.coins = 500;
     if (window.gems == null) window.gems = 100;
 
@@ -44,15 +46,15 @@ export default class HomeScene extends Phaser.Scene {
     const scale = Math.max(scaleX, scaleY);
     bg.setScale(scale).setDepth(0);
 
-    // Валюта
+    // === Баланс: иконки + числа ===
     const coinIcon = this.add.image(40, 40, 'coinDino').setScale(0.5).setOrigin(0.5).setDepth(3);
-    const coinText = this.add.text(70, 40, `${window.coins}`, {
+    const coinText = this.add.text(70, 40, ${window.coins}, {
       fontSize: '24px',
       color: '#ffffff'
     }).setOrigin(0, 0.5).setDepth(3);
 
     const gemIcon = this.add.image(width - 80, 40, 'gem').setScale(0.5).setOrigin(0.5).setDepth(3);
-    const gemText = this.add.text(width - 50, 40, `${window.gems}`, {
+    const gemText = this.add.text(width - 50, 40, ${window.gems}, {
       fontSize: '24px',
       color: '#ffffff'
     }).setOrigin(0, 0.5).setDepth(3);
@@ -61,6 +63,7 @@ export default class HomeScene extends Phaser.Scene {
     const dino = this.add.image(centerX, centerY + 100, 'dino_open').setDepth(1);
     this.dinoTween = null;
 
+    // Моргание
     this.time.addEvent({
       delay: Phaser.Math.Between(3000, 6000),
       loop: true,
@@ -70,17 +73,19 @@ export default class HomeScene extends Phaser.Scene {
       }
     });
 
+    // Автокликер
     if (window.boosters.boosterAuto) {
       this.time.addEvent({
         delay: 1000,
         loop: true,
         callback: () => {
           window.coins++;
-          coinText.setText(`${window.coins}`);
+          coinText.setText(${window.coins});
         }
       });
     }
 
+    // Клик
     let clickCount = 0;
 
     this.input.on('pointerdown', () => {
@@ -115,13 +120,15 @@ export default class HomeScene extends Phaser.Scene {
       if (window.boosters.boosterGold && clickCount % 5 === 0) clickValue += 10;
 
       window.coins += clickValue;
+
+      // Случайный бонус к алмазам (5% шанс)
       if (Math.random() < 0.05) window.gems += 1;
 
-      coinText.setText(`${window.coins}`);
-      gemText.setText(`${window.gems}`);
+      coinText.setText(${window.coins});
+      gemText.setText(${window.gems});
     });
 
-    // Бустеры — без изменений!
+    // Спрайты бустеров
     const boosterKeys = [
       'boosterFarm',
       'boosterAuto',
@@ -131,7 +138,7 @@ export default class HomeScene extends Phaser.Scene {
     ];
 
     const icons = boosterKeys.map((key, i) =>
-      window.boosters[key] ? `b_${i + 1}` : 'b_0'
+      window.boosters[key] ? b_${i + 1} : 'b_0'
     );
 
     const spriteSize = 100;
@@ -156,57 +163,44 @@ export default class HomeScene extends Phaser.Scene {
     this.addNavigation();
   }
 
- addNavigation() {
-  const buttons = [
-    { name: 'Shop', label: 'SHOP', scale: 1 },
-    { name: 'Battle', label: 'BATTLE', scale: 1.5 },
-    { name: 'About', label: 'ABOUT', scale: 1 }
-  ];
+  addNavigation() {
+    const buttons = [
+      { name: 'Shop', label: 'SHOP' },
+      { name: 'Cards', label: 'CARDS' },
+      { name: 'Battle', label: 'BATTLE' },
+      { name: 'About', label: 'ABOUT' }
+    ];
 
-  const padding = 10;
-  const buttonHeight = 50;
-  const y = this.scale.height - buttonHeight / 2 - 40; // ПОДНЯЛИ!
+    const padding = 10;
+    const buttonHeight = 64;
+    const y = this.scale.height - 50;
 
-  const totalScale = buttons.reduce((sum, btn) => sum + btn.scale, 0);
-  const availableWidth = this.scale.width - padding * (buttons.length + 1);
-  const unitWidth = availableWidth / totalScale;
+    const buttonCount = buttons.length;
+    const totalSpacing = padding * (buttonCount + 1);
+    const availableWidth = this.scale.width - totalSpacing;
+    const buttonWidth = availableWidth / buttonCount;
 
-  let offsetX = padding;
+    buttons.forEach((btn, i) => {
+      const x = padding + i * (buttonWidth + padding);
 
-  buttons.forEach((btn) => {
-    const btnWidth = unitWidth * btn.scale;
+      const bg = this.add.image(0, 0, 'menuBtn')
+        .setDisplaySize(buttonWidth, buttonHeight)
+        .setOrigin(0.5);
 
-    const graphics = this.add.graphics();
-    graphics.fillStyle(0x4e6cef, 1);
-    graphics.fillRoundedRect(0, 0, btnWidth, buttonHeight, 12);
+      const label = this.add.text(0, 0, btn.label, {
+        fontSize: '16px',
+        fontFamily: 'Arial',
+        color: '#fff',
+        align: 'center',
+        wordWrap: { width: buttonWidth - 10 }
+      }).setOrigin(0.5);
 
-    const text = this.add.text(btnWidth / 2, buttonHeight / 2, btn.label, {
-      fontSize: '18px',
-      color: '#ffffff',
-      fontFamily: 'Arial'
-    }).setOrigin(0.5);
+      const container = this.add.container(x + buttonWidth / 2, y, [bg, label])
+        .setSize(buttonWidth, buttonHeight)
+        .setInteractive()
+        .setDepth(3);
 
-    const container = this.add.container(offsetX, y, [graphics, text])
-      .setSize(btnWidth, buttonHeight)
-      .setInteractive({ useHandCursor: true })
-      .setDepth(3);
-
-    container.on('pointerover', () => {
-      graphics.clear();
-      graphics.fillStyle(0x3350cc, 1);
-      graphics.fillRoundedRect(0, 0, btnWidth, buttonHeight, 12);
+      container.on('pointerdown', () => this.scene.start(btn.name));
     });
-    container.on('pointerout', () => {
-      graphics.clear();
-      graphics.fillStyle(0x4e6cef, 1);
-      graphics.fillRoundedRect(0, 0, btnWidth, buttonHeight, 12);
-    });
-
-    container.on('pointerdown', () => this.scene.start(btn.name));
-
-    offsetX += btnWidth + padding;
-  });
-
-
   }
 }
