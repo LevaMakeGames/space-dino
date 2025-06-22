@@ -5,7 +5,7 @@ export default class BattleScene extends Phaser.Scene {
 
   preload() {
     for (let i = 1; i <= 9; i++) {
-      this.load.image(card_${i}, https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/card_${i}.png);
+      this.load.image(`card_${i}`, `https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/card_${i}.png`);
     }
   }
 
@@ -31,7 +31,7 @@ export default class BattleScene extends Phaser.Scene {
       color: '#ffffff'
     }).setOrigin(0.5);
 
-    this.coinsText = this.add.text(this.cameras.main.width - 20, 20, Coins: ${window.coins}, {
+    this.coinsText = this.add.text(this.cameras.main.width - 20, 20, `Coins: ${window.coins}`, {
       fontSize: '20px',
       color: '#ffffff'
     }).setOrigin(1, 0);
@@ -60,11 +60,11 @@ export default class BattleScene extends Phaser.Scene {
       const x = startX + col * (size + spacing);
       const y = startY + row * (size + spacing);
 
-      const img = this.add.image(x + size / 2, y + size / 2, card_${card.id})
+      const img = this.add.image(x + size / 2, y + size / 2, `card_${card.id}`)
         .setScale(scale)
         .setInteractive();
 
-      const priceText = this.add.text(x + size / 2, y + size + 4, ${card.price} $, {
+      const priceText = this.add.text(x + size / 2, y + size + 4, `${card.price} $`, {
         fontSize: '16px',
         color: '#ffffff'
       }).setOrigin(0.5);
@@ -82,20 +82,20 @@ export default class BattleScene extends Phaser.Scene {
     }
 
     window.coins -= card.price;
-    this.coinsText.setText(Coins: ${window.coins});
+    this.coinsText.setText(`Coins: ${window.coins}`);
     img.setTint(0x00ff00);
     label.setColor('#00ff00');
 
     this.selectedCards.push(card);
-    this.statusText.setText(Selected: ${this.selectedCards.length} / 3);
+    this.statusText.setText(`Selected: ${this.selectedCards.length} / 3`);
 
     if (this.selectedCards.length === 3) {
       this.time.delayedCall(1000, () => this.startBattle());
     }
   }
 
- startBattle() {
-  window.selectedCards = this.selectedCards;
-  this.scene.start('BattlePhase'); // переход в новую сцену боя
-}
+  startBattle() {
+    window.selectedCards = this.selectedCards;
+    this.scene.start('BattlePhase'); // переход в новую сцену боя
+  }
 }
