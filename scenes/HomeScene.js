@@ -16,10 +16,14 @@ export default class HomeScene extends Phaser.Scene {
     this.load.image('b_3', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/b_3.png');
     this.load.image('b_4', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/b_4.png');
     this.load.image('b_5', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/b_5.png');
+
+    // Твои новые спрайты:
+    this.load.image('coinDino', 'assets/coinDino.png'); // путь к твоему файлу монеты с динозавром
+    this.load.image('gem', 'assets/gem.png'); // путь к твоему файлу голубого алмаза
   }
 
   create() {
-    // Инициализация валют
+    // Гарантия валют
     if (window.coins == null) window.coins = 0;
     if (window.gems == null) window.gems = 0;
 
@@ -42,18 +46,18 @@ export default class HomeScene extends Phaser.Scene {
     const scale = Math.max(scaleX, scaleY);
     bg.setScale(scale).setDepth(0);
 
-    // Красивый фон под балансом
-    const balanceBg = this.add.rectangle(20, 20, 200, 50, 0x000000, 0.5)
-      .setOrigin(0, 0)
-      .setDepth(2)
-      .setStrokeStyle(2, 0xffffff, 0.8)
-      .setCornerRadius ? this.add.rectangle(20, 20, 200, 50, 0x000000, 0.5).setOrigin(0, 0).setDepth(2) : null;
-
-    // Текст баланса
-    const balanceText = this.add.text(30, 30, `💰 ${window.coins}   💎 ${window.gems}`, {
+    // === Баланс: иконки и числа ===
+    const coinIcon = this.add.image(40, 40, 'coinDino').setScale(0.5).setOrigin(0.5).setDepth(3);
+    const coinText = this.add.text(70, 28, `${window.coins}`, {
       fontSize: '24px',
-      fill: '#ffffff'
-    }).setDepth(3);
+      color: '#ffffff'
+    }).setOrigin(0, 0.5).setDepth(3);
+
+    const gemIcon = this.add.image(width - 80, 40, 'gem').setScale(0.5).setOrigin(0.5).setDepth(3);
+    const gemText = this.add.text(width - 50, 28, `${window.gems}`, {
+      fontSize: '24px',
+      color: '#ffffff'
+    }).setOrigin(0, 0.5).setDepth(3);
 
     // Динозавр
     const dino = this.add.image(centerX, centerY + 100, 'dino_open').setDepth(1);
@@ -76,7 +80,7 @@ export default class HomeScene extends Phaser.Scene {
         loop: true,
         callback: () => {
           window.coins++;
-          balanceText.setText(`💰 ${window.coins}   💎 ${window.gems}`);
+          coinText.setText(`${window.coins}`);
         }
       });
     }
@@ -120,7 +124,8 @@ export default class HomeScene extends Phaser.Scene {
       // Случайный бонус к алмазам (5% шанс)
       if (Math.random() < 0.05) window.gems += 1;
 
-      balanceText.setText(`💰 ${window.coins}   💎 ${window.gems}`);
+      coinText.setText(`${window.coins}`);
+      gemText.setText(`${window.gems}`);
     });
 
     // Спрайты бустеров
