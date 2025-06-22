@@ -7,6 +7,8 @@ export default class BattleScene extends Phaser.Scene {
     for (let i = 1; i <= 9; i++) {
       this.load.image(`card_${i}`, `https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/card_${i}.png`);
     }
+    // Загружаем иконку монетки
+    this.load.image('coinDino', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/coinDino.png');
   }
 
   create() {
@@ -26,15 +28,18 @@ export default class BattleScene extends Phaser.Scene {
 
     this.selectedCards = [];
 
+    // Заголовок
     this.add.text(this.cameras.main.centerX, 20, 'Choose your cards', {
       fontSize: '28px',
       color: '#ffffff'
     }).setOrigin(0.5);
 
-    this.coinsText = this.add.text(this.cameras.main.width - 20, 20, `Coins: ${window.coins}`, {
-      fontSize: '20px',
+    // Иконка монетки + количество монет под заголовком
+    this.coinIcon = this.add.image(this.cameras.main.centerX - 20, 60, 'coinDino').setScale(0.5);
+    this.coinsText = this.add.text(this.cameras.main.centerX + 20, 50, `${window.coins}`, {
+      fontSize: '22px',
       color: '#ffffff'
-    }).setOrigin(1, 0);
+    }).setOrigin(0, 0.5);
 
     this.createCardGrid();
 
@@ -52,7 +57,7 @@ export default class BattleScene extends Phaser.Scene {
     const scale = size / 256;
     const centerX = this.cameras.main.centerX;
     const startX = centerX - (cols * (size + spacing) - spacing) / 2;
-    const startY = 80;
+    const startY = 100; // было 80, сместили вниз на 20
 
     this.cardData.forEach((card, i) => {
       const col = i % cols;
@@ -64,10 +69,12 @@ export default class BattleScene extends Phaser.Scene {
         .setScale(scale)
         .setInteractive();
 
-      const priceText = this.add.text(x + size / 2, y + size + 4, `${card.price} $`, {
+      // Значок монетки вместо $
+      const priceIcon = this.add.image(x + size / 2 - 15, y + size + 8, 'coinDino').setScale(0.3);
+      const priceText = this.add.text(x + size / 2 + 10, y + size + 4, `${card.price}`, {
         fontSize: '16px',
         color: '#ffffff'
-      }).setOrigin(0.5);
+      }).setOrigin(0, 0.5);
 
       img.on('pointerdown', () => this.handlePurchase(card, img, priceText));
     });
@@ -82,7 +89,7 @@ export default class BattleScene extends Phaser.Scene {
     }
 
     window.coins -= card.price;
-    this.coinsText.setText(`Coins: ${window.coins}`);
+    this.coinsText.setText(`${window.coins}`);
     img.setTint(0x00ff00);
     label.setColor('#00ff00');
 
