@@ -33,7 +33,7 @@ export default class BattleScene extends Phaser.Scene {
       color: '#ffffff'
     }).setOrigin(0.5);
 
-    // Центральная монета + баланс
+    // Монетка + баланс по центру
     this.coinIcon = this.add.image(this.cameras.main.centerX - 20, 60, 'coinDino').setScale(0.5);
     this.coinsText = this.add.text(this.cameras.main.centerX + 20, 60, `${window.coins}`, {
       fontSize: '22px',
@@ -56,7 +56,9 @@ export default class BattleScene extends Phaser.Scene {
     const scale = size / 256;
     const centerX = this.cameras.main.centerX;
     const startX = centerX - (cols * (size + spacing) - spacing) / 2;
-    const startY = 120; // карты смещены вниз
+    const startY = 120; // смещаем вниз
+
+    this.cards = []; // массив для хранения ссылок на иконку и цену
 
     this.cardData.forEach((card, i) => {
       const col = i % cols;
@@ -68,38 +70,48 @@ export default class BattleScene extends Phaser.Scene {
         .setScale(scale)
         .setInteractive();
 
-      // Иконка и цена
       const priceIcon = this.add.image(x + size / 2 - 15, y + size + 10, 'coinDino').setScale(0.3).setOrigin(1, 0.5);
       const priceText = this.add.text(x + size / 2 - 10, y + size + 10, `${card.price}`, {
         fontSize: '16px',
         color: '#ffffff'
       }).setOrigin(0, 0.5);
 
-      img.on('pointerdown', () => this.handlePurchase(card, img, priceText, x + size / 2, y + size / 2));
+      this.cards.push({ img, priceIcon, priceText });
+
+      img.on('pointerdown', () => this.handlePurchase(card, img, priceIcon, priceText));
     });
   }
 
-  handlePurchase(card, img, label, cx, cy) {
+  handlePurchase(card, img, priceIcon, priceText) {
     if (this.selectedCards.length >= 3 || this.selectedCards.includes(card)) return;
 
     if (window.coins < card.price) {
-      label.setColor('#ff4444'); // не хватает монет
+      priceText.setColor('#ff4444'); // не хватает монет
       return;
     }
 
     window.coins -= card.price;
     this.coinsText.setText(`${window.coins}`);
-    label.setColor('#00ff00');
 
-    // ✅ Добавляем рамку
-    const border = this.add.rectangle(cx, cy, img.displayWidth + 10, img.displayHeight + 10)
-      .setStrokeStyle(4, 0xffff00) // жёлтая рамка
-      .setDepth(1);
+    // ✅ Убираем цену и иконку
+    priceIcon.destroy();
+    priceText.destroy();
 
-    // ✅ Добавляем галочку
-    const check = this.add.text(cx + img.displayWidth / 2 - 10, cy - img.displayHeight / 2 + 10, '✅', {
-      fontSize: '24px'
-    }).setOrigin(0.5).setDepth(2);
+    // ✅ Прямоугольная рамка по реальным размерам
+    const border = this.add.rectangle(
+      img.x,
+      img.y,
+      img.width * img.scaleX + 12,
+      img.height * img.scaleY + 12
+    ).setStrokeStyle(2, 0xffff00);
+
+    // ✅ Галочка в угол карты
+    const check = this.add.text(
+      img.x + img.width * img.scaleX / 2 - 10,
+      img.y - img.height * img.scaleY / 2 + 10,
+      '✅',
+      { fontSize: '20px' }
+    ).setOrigin(0.5).setDepth(2);
 
     this.selectedCards.push(card);
     this.statusText.setText(`Selected: ${this.selectedCards.length} / 3`);
