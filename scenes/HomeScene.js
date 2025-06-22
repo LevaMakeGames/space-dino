@@ -19,6 +19,10 @@ export default class HomeScene extends Phaser.Scene {
   }
 
   create() {
+    // Инициализация валют
+    if (window.coins == null) window.coins = 0;
+    if (window.gems == null) window.gems = 0;
+
     if (!window.boosters) {
       window.boosters = {
         boosterFarm: false,
@@ -38,13 +42,18 @@ export default class HomeScene extends Phaser.Scene {
     const scale = Math.max(scaleX, scaleY);
     bg.setScale(scale).setDepth(0);
 
-    // Счётчик монет
-    let coins = 0;
-    let clickCount = 0;
-    const counter = this.add.text(20, 20, 'Coins: 0', {
+    // Красивый фон под балансом
+    const balanceBg = this.add.rectangle(20, 20, 200, 50, 0x000000, 0.5)
+      .setOrigin(0, 0)
+      .setDepth(2)
+      .setStrokeStyle(2, 0xffffff, 0.8)
+      .setCornerRadius ? this.add.rectangle(20, 20, 200, 50, 0x000000, 0.5).setOrigin(0, 0).setDepth(2) : null;
+
+    // Текст баланса
+    const balanceText = this.add.text(30, 30, `💰 ${window.coins}   💎 ${window.gems}`, {
       fontSize: '24px',
-      fill: '#0f0'
-    }).setDepth(2);
+      fill: '#ffffff'
+    }).setDepth(3);
 
     // Динозавр
     const dino = this.add.image(centerX, centerY + 100, 'dino_open').setDepth(1);
@@ -60,19 +69,21 @@ export default class HomeScene extends Phaser.Scene {
       }
     });
 
-    // Автоклик
+    // Автокликер
     if (window.boosters.boosterAuto) {
       this.time.addEvent({
         delay: 1000,
         loop: true,
         callback: () => {
-          coins++;
-          counter.setText(`Coins: ${coins}`);
+          window.coins++;
+          balanceText.setText(`💰 ${window.coins}   💎 ${window.gems}`);
         }
       });
     }
 
     // Клик
+    let clickCount = 0;
+
     this.input.on('pointerdown', () => {
       if (this.dinoTween && this.dinoTween.isPlaying()) return;
 
@@ -104,8 +115,12 @@ export default class HomeScene extends Phaser.Scene {
       if (window.boosters.boosterLuck && Math.random() < 0.25) clickValue += 3;
       if (window.boosters.boosterGold && clickCount % 5 === 0) clickValue += 10;
 
-      coins += clickValue;
-      counter.setText(`Coins: ${coins}`);
+      window.coins += clickValue;
+
+      // Случайный бонус к алмазам (5% шанс)
+      if (Math.random() < 0.05) window.gems += 1;
+
+      balanceText.setText(`💰 ${window.coins}   💎 ${window.gems}`);
     });
 
     // Спрайты бустеров
@@ -123,7 +138,7 @@ export default class HomeScene extends Phaser.Scene {
 
     const spriteSize = 100;
     const spacing = 30;
-    const topOffset = height * 0.2 - 20; // поднято ещё на 10
+    const topOffset = height * 0.2 - 20;
 
     const positions = [
       { x: centerX - spriteSize - spacing, y: topOffset },
@@ -137,7 +152,7 @@ export default class HomeScene extends Phaser.Scene {
       this.add.image(positions[i].x, positions[i].y, iconKey)
         .setDisplaySize(spriteSize, spriteSize)
         .setOrigin(0.5)
-        .setDepth(0.5); // ниже динозавра
+        .setDepth(0.5);
     });
 
     this.addNavigation();
