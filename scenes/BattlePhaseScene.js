@@ -4,9 +4,12 @@ export default class BattlePhaseScene extends Phaser.Scene {
   }
 
   preload() {
+    // Загружаем все карты
     for (let i = 1; i <= 9; i++) {
       this.load.image(`card_${i}`, `https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/card_${i}.png`);
     }
+    // Загружаем фон стола напрямую из GitHub
+    this.load.image('battleBg', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/battleBg.png');
   }
 
   create() {
@@ -15,13 +18,17 @@ export default class BattlePhaseScene extends Phaser.Scene {
       return;
     }
 
-    if (window.gems == null) window.gems = 0;
+    // Добавляем фон и растягиваем на весь экран
+    const bg = this.add.image(0, 0, 'battleBg').setOrigin(0);
+    const scaleX = this.scale.width / bg.width;
+    const scaleY = this.scale.height / bg.height;
+    const scale = Math.max(scaleX, scaleY);
+    bg.setScale(scale).setDepth(0);
 
+    // Остальная логика боя
     this.enemyCards = this.getRandomEnemyCards();
     this.playerCardImages = [];
     this.enemyCardImages = [];
-
-   
 
     this.showCards();
 
@@ -65,41 +72,27 @@ export default class BattlePhaseScene extends Phaser.Scene {
 
     const outcome = this.determineWinner(player, enemy);
 
-    // Move both cards forward
-    this.tweens.add({ targets: playerImg, y: playerImg.y - 50, duration: 300, ease: 'Power2' });
-    this.tweens.add({ targets: enemyImg, y: enemyImg.y + 50, duration: 300, ease: 'Power2' });
+    this.tweens.add({ targets: playerImg, y: playerImg.y - 50, duration: 300 });
+    this.tweens.add({ targets: enemyImg, y: enemyImg.y + 50, duration: 300 });
 
     this.time.delayedCall(400, () => {
       if (outcome === 'player') {
         this.playerWins++;
-        this.tweens.add({ targets: playerImg, scale: 0.62, duration: 200, yoyo: true });
-        this.tweens.add({ targets: enemyImg, scale: 0.42, angle: 10, duration: 200 });
-      } else if (outcome === 'enemy') {
-        this.enemyWins++;
-        this.tweens.add({ targets: enemyImg, scale: 0.62, duration: 200, yoyo: true });
-        this.tweens.add({ targets: playerImg, scale: 0.42, angle: -10, duration: 200 });
       } else {
-        this.tweens.add({ targets: [playerImg, enemyImg], scale: 0.6, duration: 150, yoyo: true });
+        this.enemyWins++;
       }
     });
 
     this.time.delayedCall(1000, () => {
+      playerImg.destroy();
+      enemyImg.destroy();
+
       const px = playerImg.x;
       const topY = enemyImg.y;
       const bottomY = playerImg.y;
 
-      playerImg.destroy();
-      enemyImg.destroy();
-
-      let playerEmoji = '🤝';
-      let enemyEmoji = '🤝';
-      if (outcome === 'player') {
-        playerEmoji = '✅';
-        enemyEmoji = '❌';
-      } else if (outcome === 'enemy') {
-        playerEmoji = '❌';
-        enemyEmoji = '✅';
-      }
+      const playerEmoji = outcome === 'player' ? '✅' : '❌';
+      const enemyEmoji = outcome === 'player' ? '❌' : '✅';
 
       this.add.text(px, topY, enemyEmoji, { fontSize: '40px' }).setOrigin(0.5);
       this.add.text(px, bottomY, playerEmoji, { fontSize: '40px' }).setOrigin(0.5);
@@ -110,20 +103,6 @@ export default class BattlePhaseScene extends Phaser.Scene {
   }
 
   determineWinner(player, enemy) {
-    // спецспособности игрока
-    if (player.special === 'win_vs_earth' && enemy.element === 'earth') return 'player';
-    if (player.special === 'win_vs_water' && enemy.element === 'water') return 'player';
-    if (player.special === 'draw_air' && enemy.element === 'air') return 'draw';
-    if (player.special === 'vs_earth_20' && enemy.element === 'earth' && Math.random() < 0.2) return 'player';
-    if (player.special === 'secret_power' && enemy.element !== 'secret') return 'player';
-
-    // спецспособности врага
-    if (enemy.special === 'win_vs_earth' && player.element === 'earth') return 'enemy';
-    if (enemy.special === 'win_vs_water' && player.element === 'water') return 'enemy';
-    if (enemy.special === 'draw_air' && player.element === 'air') return 'draw';
-    if (enemy.special === 'vs_earth_20' && player.element === 'earth' && Math.random() < 0.2) return 'enemy';
-    if (enemy.special === 'secret_power' && player.element !== 'secret') return 'enemy';
-
     const beats = {
       fire: 'earth',
       water: 'fire',
@@ -134,7 +113,7 @@ export default class BattlePhaseScene extends Phaser.Scene {
     if (beats[player.element] === enemy.element) return 'player';
     if (beats[enemy.element] === player.element) return 'enemy';
 
-    return 'draw';
+    return Math.random() < 0.5 ? 'player' : 'enemy';
   }
 
   showFinalResult() {
@@ -153,22 +132,16 @@ export default class BattlePhaseScene extends Phaser.Scene {
       coinReward = 100;
       gemReward = 3;
       color = '#00ff00';
-    } else if (this.enemyWins > this.playerWins) {
+    } else {
       resultEmoji = '💀';
       resultText = 'Defeat';
       color = '#ff4444';
-    } else {
-      resultEmoji = '⚖️';
-      resultText = 'Draw!';
-      coinReward = 30;
-      gemReward = 1;
-      color = '#ccccff';
     }
 
     window.coins += coinReward;
     window.gems += gemReward;
 
-    this.add.text(centerX, centerY - 100, '🏁 BATTLE OVER', {
+    this.add.text(centerX, centerY - 100, 'Battle Over', {
       fontSize: '36px',
       color: '#ffffff'
     }).setOrigin(0.5);
@@ -182,8 +155,7 @@ export default class BattlePhaseScene extends Phaser.Scene {
       color: color
     }).setOrigin(0.5);
 
-    const rewardLine = `+${coinReward} 💰     +${gemReward} 💎`;
-
+    const rewardLine = `+${coinReward} 💰   +${gemReward} 💎`;
     this.add.text(centerX, centerY + 80, rewardLine, {
       fontSize: '24px',
       color: '#ffffff'
@@ -198,8 +170,13 @@ export default class BattlePhaseScene extends Phaser.Scene {
     const allIds = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     const playerIds = window.selectedCards.map(c => c.id);
     const available = allIds.filter(id => !playerIds.includes(id));
-    Phaser.Utils.Array.Shuffle(available);
-    return available.slice(0, 3).map(id => ({ id, ...this.getCardData(id) }));
+
+    const enemyCards = [];
+    for (let i = 0; i < 3; i++) {
+      const id = Phaser.Utils.Array.RemoveRandomElement(available);
+      enemyCards.push(this.getCardData(id));
+    }
+    return enemyCards;
   }
 
   getCardData(id) {
