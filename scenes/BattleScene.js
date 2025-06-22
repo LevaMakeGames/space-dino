@@ -7,7 +7,6 @@ export default class BattleScene extends Phaser.Scene {
     for (let i = 1; i <= 9; i++) {
       this.load.image(`card_${i}`, `https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/card_${i}.png`);
     }
-    // Загружаем иконку монетки
     this.load.image('coinDino', 'https://raw.githubusercontent.com/LevaMakeGames/space-dino/main/assets/coinDino.png');
   }
 
@@ -34,9 +33,9 @@ export default class BattleScene extends Phaser.Scene {
       color: '#ffffff'
     }).setOrigin(0.5);
 
-    // Иконка монетки + количество монет под заголовком
+    // Центральная монета + баланс
     this.coinIcon = this.add.image(this.cameras.main.centerX - 20, 60, 'coinDino').setScale(0.5);
-    this.coinsText = this.add.text(this.cameras.main.centerX + 20, 50, `${window.coins}`, {
+    this.coinsText = this.add.text(this.cameras.main.centerX + 20, 60, `${window.coins}`, {
       fontSize: '22px',
       color: '#ffffff'
     }).setOrigin(0, 0.5);
@@ -57,7 +56,7 @@ export default class BattleScene extends Phaser.Scene {
     const scale = size / 256;
     const centerX = this.cameras.main.centerX;
     const startX = centerX - (cols * (size + spacing) - spacing) / 2;
-    const startY = 100; // было 80, сместили вниз на 20
+    const startY = 120; // было 80 -> +40
 
     this.cardData.forEach((card, i) => {
       const col = i % cols;
@@ -69,9 +68,9 @@ export default class BattleScene extends Phaser.Scene {
         .setScale(scale)
         .setInteractive();
 
-      // Значок монетки вместо $
-      const priceIcon = this.add.image(x + size / 2 - 15, y + size + 8, 'coinDino').setScale(0.3);
-      const priceText = this.add.text(x + size / 2 + 10, y + size + 4, `${card.price}`, {
+      // Иконка + текст цены идеально по центру и по линии
+      const priceIcon = this.add.image(x + size / 2 - 15, y + size + 10, 'coinDino').setScale(0.3).setOrigin(1, 0.5);
+      const priceText = this.add.text(x + size / 2 - 10, y + size + 10, `${card.price}`, {
         fontSize: '16px',
         color: '#ffffff'
       }).setOrigin(0, 0.5);
@@ -103,6 +102,6 @@ export default class BattleScene extends Phaser.Scene {
 
   startBattle() {
     window.selectedCards = this.selectedCards;
-    this.scene.start('BattlePhase'); // переход в новую сцену боя
+    this.scene.start('BattlePhase');
   }
 }
