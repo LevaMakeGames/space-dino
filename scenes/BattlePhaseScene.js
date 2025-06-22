@@ -17,11 +17,15 @@ export default class BattlePhaseScene extends Phaser.Scene {
 
     if (window.gems == null) window.gems = 0;
 
-    this.enemyCards = this.getRandomEnemyCards();
+    this.enemyCards = this.getSmartEnemyCards();
     this.playerCardImages = [];
     this.enemyCardImages = [];
 
-   
+    // Можно убрать надпись, если не нужна
+    this.add.text(this.cameras.main.centerX, 20, 'Battle Phase', {
+      fontSize: '32px',
+      color: '#ffffff'
+    }).setOrigin(0.5);
 
     this.showCards();
 
@@ -65,7 +69,7 @@ export default class BattlePhaseScene extends Phaser.Scene {
 
     const outcome = this.determineWinner(player, enemy);
 
-    // Move both cards forward
+    // Анимация: карты двигаются вперёд
     this.tweens.add({ targets: playerImg, y: playerImg.y - 50, duration: 300, ease: 'Power2' });
     this.tweens.add({ targets: enemyImg, y: enemyImg.y + 50, duration: 300, ease: 'Power2' });
 
@@ -74,12 +78,10 @@ export default class BattlePhaseScene extends Phaser.Scene {
         this.playerWins++;
         this.tweens.add({ targets: playerImg, scale: 0.62, duration: 200, yoyo: true });
         this.tweens.add({ targets: enemyImg, scale: 0.42, angle: 10, duration: 200 });
-      } else if (outcome === 'enemy') {
+      } else {
         this.enemyWins++;
         this.tweens.add({ targets: enemyImg, scale: 0.62, duration: 200, yoyo: true });
         this.tweens.add({ targets: playerImg, scale: 0.42, angle: -10, duration: 200 });
-      } else {
-        this.tweens.add({ targets: [playerImg, enemyImg], scale: 0.6, duration: 150, yoyo: true });
       }
     });
 
@@ -91,15 +93,8 @@ export default class BattlePhaseScene extends Phaser.Scene {
       playerImg.destroy();
       enemyImg.destroy();
 
-      let playerEmoji = '🤝';
-      let enemyEmoji = '🤝';
-      if (outcome === 'player') {
-        playerEmoji = '✅';
-        enemyEmoji = '❌';
-      } else if (outcome === 'enemy') {
-        playerEmoji = '❌';
-        enemyEmoji = '✅';
-      }
+      const playerEmoji = outcome === 'player' ? '✅' : '❌';
+      const enemyEmoji = outcome === 'player' ? '❌' : '✅';
 
       this.add.text(px, topY, enemyEmoji, { fontSize: '40px' }).setOrigin(0.5);
       this.add.text(px, bottomY, playerEmoji, { fontSize: '40px' }).setOrigin(0.5);
@@ -110,20 +105,20 @@ export default class BattlePhaseScene extends Phaser.Scene {
   }
 
   determineWinner(player, enemy) {
-    // спецспособности игрока
+    // Спецэффекты
     if (player.special === 'win_vs_earth' && enemy.element === 'earth') return 'player';
     if (player.special === 'win_vs_water' && enemy.element === 'water') return 'player';
-    if (player.special === 'draw_air' && enemy.element === 'air') return 'draw';
+    if (player.special === 'draw_air' && enemy.element === 'air') return 'player';
     if (player.special === 'vs_earth_20' && enemy.element === 'earth' && Math.random() < 0.2) return 'player';
     if (player.special === 'secret_power' && enemy.element !== 'secret') return 'player';
 
-    // спецспособности врага
     if (enemy.special === 'win_vs_earth' && player.element === 'earth') return 'enemy';
     if (enemy.special === 'win_vs_water' && player.element === 'water') return 'enemy';
-    if (enemy.special === 'draw_air' && player.element === 'air') return 'draw';
+    if (enemy.special === 'draw_air' && player.element === 'air') return 'enemy';
     if (enemy.special === 'vs_earth_20' && player.element === 'earth' && Math.random() < 0.2) return 'enemy';
     if (enemy.special === 'secret_power' && player.element !== 'secret') return 'enemy';
 
+    // Элементная логика
     const beats = {
       fire: 'earth',
       water: 'fire',
@@ -134,7 +129,8 @@ export default class BattlePhaseScene extends Phaser.Scene {
     if (beats[player.element] === enemy.element) return 'player';
     if (beats[enemy.element] === player.element) return 'enemy';
 
-    return 'draw';
+    // Никогда ничьи: при равенстве элементов - 70% игрок, 30% враг
+    return Math.random() < 0.7 ? 'player' : 'enemy';
   }
 
   showFinalResult() {
@@ -153,16 +149,10 @@ export default class BattlePhaseScene extends Phaser.Scene {
       coinReward = 100;
       gemReward = 3;
       color = '#00ff00';
-    } else if (this.enemyWins > this.playerWins) {
+    } else {
       resultEmoji = '💀';
       resultText = 'Defeat';
       color = '#ff4444';
-    } else {
-      resultEmoji = '⚖️';
-      resultText = 'Draw!';
-      coinReward = 30;
-      gemReward = 1;
-      color = '#ccccff';
     }
 
     window.coins += coinReward;
@@ -182,8 +172,7 @@ export default class BattlePhaseScene extends Phaser.Scene {
       color: color
     }).setOrigin(0.5);
 
-    const rewardLine = `+${coinReward} 💰     +${gemReward} 💎`;
-
+    const rewardLine = `+${coinReward} 💰   +${gemReward} 💎`;
     this.add.text(centerX, centerY + 80, rewardLine, {
       fontSize: '24px',
       color: '#ffffff'
@@ -194,12 +183,54 @@ export default class BattlePhaseScene extends Phaser.Scene {
     });
   }
 
-  getRandomEnemyCards() {
+  getSmartEnemyCards() {
     const allIds = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     const playerIds = window.selectedCards.map(c => c.id);
-    const available = allIds.filter(id => !playerIds.includes(id));
-    Phaser.Utils.Array.Shuffle(available);
-    return available.slice(0, 3).map(id => ({ id, ...this.getCardData(id) }));
+    let available = allIds.filter(id => !playerIds.includes(id));
+
+    const counters = {
+      fire: 'water',
+      water: 'air',
+      earth: 'fire',
+      air: 'earth',
+      secret: null // бот не выбирает secret
+    };
+
+    const enemyCards = [];
+
+    window.selectedCards.forEach(playerCard => {
+      let pick;
+
+      if (playerCard.element !== 'secret' && Math.random() < 0.3) {
+        const counterElement = counters[playerCard.element];
+        const candidates = available
+          .map(id => this.getCardData(id))
+          .filter(card => card.element === counterElement && card.element !== 'secret');
+
+        if (candidates.length > 0) {
+          pick = Phaser.Utils.Array.RemoveRandomElement(candidates);
+          available = available.filter(id => id !== pick.id);
+        }
+      }
+
+      if (!pick) {
+        const candidates = available
+          .map(id => this.getCardData(id))
+          .filter(card => card.element !== playerCard.element && card.element !== 'secret');
+
+        if (candidates.length > 0) {
+          pick = Phaser.Utils.Array.RemoveRandomElement(candidates);
+          available = available.filter(id => id !== pick.id);
+        } else {
+          const fallbackId = Phaser.Utils.Array.RemoveRandomElement(available);
+          pick = this.getCardData(fallbackId);
+        }
+      }
+
+      enemyCards.push(pick);
+    });
+
+    return enemyCards;
   }
 
   getCardData(id) {
