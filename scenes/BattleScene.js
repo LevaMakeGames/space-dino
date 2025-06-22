@@ -51,12 +51,13 @@ export default class BattleScene extends Phaser.Scene {
 
   createCardGrid() {
     const cols = 3;
-    const spacing = 30;   // твой новый spacing
-    const size = 120;     // твой новый size
+    const spacingX = 20;   // горизонтальный отступ
+    const spacingY = 30;   // вертикальный отступ
+    const size = 120;      // размер карт
     const scale = size / 256;
 
     const centerX = this.cameras.main.centerX;
-    const startX = centerX - (cols * (size + spacing) - spacing) / 2;
+    const startX = centerX - (cols * (size + spacingX) - spacingX) / 2;
     const startY = 120;
 
     this.cards = [];
@@ -64,8 +65,8 @@ export default class BattleScene extends Phaser.Scene {
     this.cardData.forEach((card, i) => {
       const col = i % cols;
       const row = Math.floor(i / cols);
-      const x = startX + col * (size + spacing);
-      const y = startY + row * (size + spacing);
+      const x = startX + col * (size + spacingX);
+      const y = startY + row * (size + spacingY);
 
       const img = this.add.image(x + size / 2, y + size / 2, `card_${card.id}`)
         .setScale(scale)
