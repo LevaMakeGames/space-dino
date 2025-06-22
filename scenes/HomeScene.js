@@ -156,55 +156,57 @@ export default class HomeScene extends Phaser.Scene {
     this.addNavigation();
   }
 
-  addNavigation() {
-    const buttons = [
-      { name: 'Shop', label: 'SHOP', scale: 1 },
-      { name: 'Battle', label: 'BATTLE', scale: 1.5 },
-      { name: 'About', label: 'ABOUT', scale: 1 }
-    ];
+ addNavigation() {
+  const buttons = [
+    { name: 'Shop', label: 'SHOP', scale: 1 },
+    { name: 'Battle', label: 'BATTLE', scale: 1.5 },
+    { name: 'About', label: 'ABOUT', scale: 1 }
+  ];
 
-    const padding = 10;
-    const buttonHeight = 50;
-    const y = this.scale.height - buttonHeight / 2 - 10;
+  const padding = 10;
+  const buttonHeight = 50;
+  const y = this.scale.height - buttonHeight / 2 - 40; // ПОДНЯЛИ!
 
-    const totalScale = buttons.reduce((sum, btn) => sum + btn.scale, 0);
-    const availableWidth = this.scale.width - padding * (buttons.length + 1);
-    const unitWidth = availableWidth / totalScale;
+  const totalScale = buttons.reduce((sum, btn) => sum + btn.scale, 0);
+  const availableWidth = this.scale.width - padding * (buttons.length + 1);
+  const unitWidth = availableWidth / totalScale;
 
-    let offsetX = padding;
+  let offsetX = padding;
 
-    buttons.forEach((btn) => {
-      const btnWidth = unitWidth * btn.scale;
+  buttons.forEach((btn) => {
+    const btnWidth = unitWidth * btn.scale;
 
-      const graphics = this.add.graphics();
+    const graphics = this.add.graphics();
+    graphics.fillStyle(0x4e6cef, 1);
+    graphics.fillRoundedRect(0, 0, btnWidth, buttonHeight, 12);
+
+    const text = this.add.text(btnWidth / 2, buttonHeight / 2, btn.label, {
+      fontSize: '18px',
+      color: '#ffffff',
+      fontFamily: 'Arial'
+    }).setOrigin(0.5);
+
+    const container = this.add.container(offsetX, y, [graphics, text])
+      .setSize(btnWidth, buttonHeight)
+      .setInteractive({ useHandCursor: true })
+      .setDepth(3);
+
+    container.on('pointerover', () => {
+      graphics.clear();
+      graphics.fillStyle(0x3350cc, 1);
+      graphics.fillRoundedRect(0, 0, btnWidth, buttonHeight, 12);
+    });
+    container.on('pointerout', () => {
+      graphics.clear();
       graphics.fillStyle(0x4e6cef, 1);
       graphics.fillRoundedRect(0, 0, btnWidth, buttonHeight, 12);
-
-      const text = this.add.text(btnWidth / 2, buttonHeight / 2, btn.label, {
-        fontSize: '18px',
-        color: '#ffffff',
-        fontFamily: 'Arial'
-      }).setOrigin(0.5);
-
-      const container = this.add.container(offsetX, y, [graphics, text])
-        .setSize(btnWidth, buttonHeight)
-        .setInteractive({ useHandCursor: true })
-        .setDepth(3);
-
-      container.on('pointerover', () => {
-        graphics.clear();
-        graphics.fillStyle(0x3350cc, 1);
-        graphics.fillRoundedRect(0, 0, btnWidth, buttonHeight, 12);
-      });
-      container.on('pointerout', () => {
-        graphics.clear();
-        graphics.fillStyle(0x4e6cef, 1);
-        graphics.fillRoundedRect(0, 0, btnWidth, buttonHeight, 12);
-      });
-
-      container.on('pointerdown', () => this.scene.start(btn.name));
-
-      offsetX += btnWidth + padding;
     });
+
+    container.on('pointerdown', () => this.scene.start(btn.name));
+
+    offsetX += btnWidth + padding;
+  });
+
+
   }
 }
